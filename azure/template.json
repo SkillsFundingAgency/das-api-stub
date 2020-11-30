@@ -30,6 +30,32 @@
         },
         "loggingRedisConnectionString": {
             "type": "securestring"
+        },
+        "appServiceName": {
+            "type": "string"
+        },
+        "sharedFrontEndAppServicePlanName": {
+            "type": "string"
+        },
+        "sharedEnvResourceGroup": {
+            "type": "string"
+        },
+        "sharedFrontEndSubnetResourceId": {
+            "type": "string"
+        },
+        "loggingRedisKey": {
+            "type": "string"
+        },
+        "TokenCertificateThumbprint": {
+            "type": "string"
+        },
+        "customHostName": {
+            "type": "string"
+        },
+        "appServiceAllowedIPs": {
+            "type": "array",
+            "defaultValue": [
+            ]
         }
     },
     "variables": {
@@ -46,6 +72,77 @@
             "tags": "[parameters('tags')]",
             "properties": {
             }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "app-service-resources-deployment",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'app-service-v2.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "appServiceName": {
+                        "value": "[parameters('appServiceName')]"
+                    },
+                    "appServicePlanName": {
+                        "value": "[parameters('sharedFrontEndAppServicePlanName')]"
+                    },
+                    "appServicePlanResourceGroup": {
+                        "value": "[parameters('sharedEnvResourceGroup')]"
+                    },
+                    "subnetResourceId": {
+                        "value": "[parameters('sharedFrontEndSubnetResourceId')]"
+                    },
+                    "deployStagingSlot": {
+                        "value": true
+                    },
+                    "appServiceAppSettings": {
+                        "value": {
+                            "array": [
+                                {
+                                    "name": "ConfigurationStorageConnectionString",
+                                    "value": "[parameters('configurationStorageConnectionString')]"
+                                },
+                                {
+                                    "name": "EnvironmentName",
+                                    "value": "[parameters('environmentName')]"
+                                },
+                                {
+                                    "name": "LoggingRedisConnectionString",
+                                    "value": "[parameters('loggingRedisConnectionString')]"
+                                },
+                                {
+                                    "name": "LoggingRedisKey",
+                                    "value": "[parameters('loggingRedisKey')]"
+                                },
+                                {
+                                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                                    "value": "[reference('app-insights-deployment').outputs.InstrumentationKey.value]"
+                                },
+                                {
+                                    "name": "WEBSITE_LOAD_CERTIFICATES",
+                                    "value": "[parameters('TokenCertificateThumbprint')]"
+                                }
+                            ]
+                        }
+                    },
+                    "customHostName": {
+                        "value": "[parameters('customHostName')]"
+                    },
+                    "certificateThumbprint": {
+                        "value": "[reference('app-service-certificate').outputs.certificateThumbprint.value]"
+                    },
+                    "ipSecurityRestrictions": {
+                        "value": "[parameters('appServiceAllowedIPs')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "app-service-certificate"
+            ]
         }
     ],
     "outputs": {
