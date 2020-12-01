@@ -20,7 +20,7 @@ namespace RestApiStub
             await CreateTableAsync(TableName);
         }
 
-        public static async Task CreateTableAsync(string tableName)
+        private static async Task CreateTableAsync(string tableName)
         {
             var storageAccount = CloudStorageAccount.Parse(Settings.ConnectionString);
             var tableClient = storageAccount.CreateCloudTableClient();

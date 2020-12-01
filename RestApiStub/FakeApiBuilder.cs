@@ -1,7 +1,4 @@
-﻿using System.Net;
-using WireMock.RequestBuilders;
-using WireMock.ResponseBuilders;
-using WireMock.Server;
+﻿using WireMock.Server;
 
 namespace RestApiStub
 {
@@ -21,24 +18,6 @@ namespace RestApiStub
         private FakeApiBuilder(int port)
         {
             _server = WireMockServer.StartWithAdminInterface(port);
-        }
-
-        public FakeApiBuilder WithHealthCheck()
-        {
-            _server
-                .Given(
-                    Request
-                        .Create()
-                        .WithPath("/health")
-                        .UsingGet()
-                )
-                .RespondWith(
-                    Response.Create()
-                        .WithHeader("Content-Type", "application/json")
-                        .WithBody("{\"result\": \"OK\"}")
-                        .WithStatusCode(HttpStatusCode.OK));
-
-            return this;
         }
     }
 }

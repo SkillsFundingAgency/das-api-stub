@@ -46,6 +46,7 @@ namespace RestApiStub
 
         public async Task Refresh()
         {
+            MockServer.ResetMappings();
             var routes = await DataRepository.GetAll();
 
             foreach (var route in routes)

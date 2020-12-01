@@ -29,13 +29,21 @@ namespace RestApiStub
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "RestApiStub", Version = "v1" });
             });
 
+            ReadSettings(services);
             DataRepository.CreateTableStorage().ConfigureAwait(false);
-            StartWireMockServer();
+            StartWireMockServer(services);
         }
 
-        private static void StartWireMockServer()
+        private static void ReadSettings(IServiceCollection services)
         {
-            FakeApiBuilder.Create(Settings.WireMockPort).WithHealthCheck().Build();
+            var config = services.BuildServiceProvider().GetService<IConfiguration>();
+            Settings.Set(config);
+        }
+
+        private static void StartWireMockServer(IServiceCollection services)
+        {
+            var fakeApi = FakeApiBuilder.Create(Settings.WireMockPort).Build();
+            services.AddSingleton(fakeApi);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System;
 using System.Net.Http;
@@ -14,20 +15,26 @@ namespace RestApiStub.Tests
     public class WhenSaved
     {
         private TestServer _testServer;
-        private HttpClient _testClient;
+        private HttpClient _webApiClient;
+        private HttpClient _fakeApiClient;
 
         [OneTimeSetUp]
         public void Setup()
         {
             var builder = new WebHostBuilder().UseStartup<Startup>();
-
             _testServer = new TestServer(builder);
-            _testClient = _testServer.CreateClient();
+            _webApiClient = _testServer.CreateClient();
+            _fakeApiClient = new HttpClient { BaseAddress = new Uri("http://localhost:" + Settings.WireMockPort) };
         }
 
         [OneTimeTearDown]
-        public async Task Teardown()
+        public async Task TearDown()
         {
+            var fakeApi = _testServer.Services.GetService<FakeApi>();
+            fakeApi?.Dispose();
+            _fakeApiClient.Dispose();
+            _webApiClient.Dispose();
+            _testServer.Dispose();
             await DataRepository.DropTableStorage();
         }
 
@@ -40,7 +47,7 @@ namespace RestApiStub.Tests
             var key = Uri.EscapeDataString("data?v=1.0&id=" + expected.Key);
             var url = $"api-stub/save?httpMethod={httpMethod}&url={key}";
 
-            var response = await _testClient.PostAsJsonAsync(url, expected);
+            var response = await _webApiClient.PostAsJsonAsync(url, expected);
             response.EnsureSuccessStatusCode();
 
             var data = await DataRepository.GetJsonData(httpMethod, key);
@@ -57,17 +64,34 @@ namespace RestApiStub.Tests
             var key = Uri.EscapeDataString("data?v=1.0&id=12345");
             var url = $"api-stub/save?httpMethod={httpMethod}&url={key}";
 
-            var response = await _testClient.PostAsJsonAsync(url, original);
+            var response = await _webApiClient.PostAsJsonAsync(url, original);
             response.EnsureSuccessStatusCode();
 
             var expected = new TestObject { Key = 789, Value = "String value 789" };
 
-            response = await _testClient.PostAsJsonAsync(url, expected);
+            response = await _webApiClient.PostAsJsonAsync(url, expected);
             response.EnsureSuccessStatusCode();
 
             var data = await DataRepository.GetJsonData(httpMethod, key);
 
             data.Should().BeEquivalentTo(JsonSerializer.Serialize(expected));
+        }
+
+        [Test]
+        public async Task saved_data_is_available_via_fakeApi_after_save()
+        {
+            var expected = new TestObject { Key = 123, Value = "String value 123" };
+            const HttpMethod httpMethod = HttpMethod.Get;
+
+            const string key = "/get-some-data";
+            var url = $"api-stub/save?httpMethod={httpMethod}&url={key}";
+
+            var response = await _webApiClient.PostAsJsonAsync(url, expected);
+            response.EnsureSuccessStatusCode();
+
+            var data = await _fakeApiClient.GetFromJsonAsync<TestObject>(key);
+
+            data.Should().BeEquivalentTo(expected);
         }
     }
 }

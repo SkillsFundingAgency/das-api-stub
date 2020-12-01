@@ -1,4 +1,8 @@
 using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System;
 using System.Net.Http;
@@ -11,38 +15,35 @@ namespace RestApiStub.Tests
 {
     public class WhenRefreshed
     {
-        private FakeApi _fakeApi;
-        private HttpClient _client;
+        private TestServer _testServer;
+        private HttpClient _fakeApiClient;
+        private HttpClient _webApiClient;
 
         [OneTimeSetUp]
-        public async Task Setup()
+        public void Setup()
         {
-            await DataRepository.CreateTableStorage();
-            _fakeApi = FakeApiBuilder.Create(8088).WithHealthCheck().Build();
-            _client = new HttpClient { BaseAddress = new Uri("http://localhost:8088") };
+            var builder = new WebHostBuilder().UseStartup<Startup>();
+            _testServer = new TestServer(builder);
+            _webApiClient = _testServer.CreateClient();
+            _fakeApiClient = new HttpClient { BaseAddress = new Uri("http://localhost:" + Settings.WireMockPort) };
         }
 
         [OneTimeTearDown]
         public async Task TearDown()
         {
-            _fakeApi.Dispose();
-            _client.Dispose();
+            var fakeApi = _testServer.Services.GetService<FakeApi>();
+            fakeApi?.Dispose();
+            _fakeApiClient.Dispose();
+            _webApiClient.Dispose();
+            _testServer.Dispose();
             await DataRepository.DropTableStorage();
-        }
-
-        [Test]
-        public async Task wiremock_health_endpoint_returns_Ok()
-        {
-            var url = "/health";
-            var response = await _client.GetStringAsync(url);
-            response.Should().Be("{\"result\": \"OK\"}");
         }
 
         [Test]
         public async Task wiremock_admin_endpoint_returns_Ok()
         {
-            var url = "/__admin/mappings";
-            var response = await _client.GetAsync(url);
+            const string url = "/__admin/mappings";
+            var response = await _fakeApiClient.GetAsync(url);
             response.StatusCode.Should().Be(200);
         }
 
@@ -51,33 +52,72 @@ namespace RestApiStub.Tests
         {
             // Arrange
             var expected = new TestObject { Key = 123, Value = "String value 123" };
-            var url = "/external-api/data?v=1.0";
+            const string url = "/external-api/data";
             await DataRepository.InsertOrReplace(HttpMethod.Get, url, expected);
 
             // Act
-            await _fakeApi.Refresh();
+            await _webApiClient.GetAsync("api-stub/refresh");
 
             // Assert
-            var response = await _client.GetFromJsonAsync<TestObject>(url);
+            var response = await _fakeApiClient.GetFromJsonAsync<TestObject>(url);
             response.Should().BeEquivalentTo(expected);
         }
 
+        [Test]
+        public async Task new_GET_route_with_query_parameters_returns_expected_data_from_storage()
+        {
+            // Arrange
+            var expected = new TestObject { Key = 123, Value = "String value 123" };
+            const string url = "/external-api/data?v=1.0&id=123";
+            await DataRepository.InsertOrReplace(HttpMethod.Get, url, expected);
+
+            // Act
+            await _webApiClient.GetAsync("api-stub/refresh");
+
+            // Assert
+            var response = await _fakeApiClient.GetFromJsonAsync<TestObject>(url);
+            response.Should().BeEquivalentTo(expected);
+        }
 
         [Test]
         public async Task new_POST_route_returns_expected_data_from_storage()
         {
             // Arrange
             var expected = new TestObject { Key = 456, Value = "String value 456" };
-            var url = "/external-api/data?v=1.0&id=456";
+            const string url = "/external-api/data?v=1.0&id=456";
             await DataRepository.InsertOrReplace(HttpMethod.Post, url, expected);
 
             // Act
-            await _fakeApi.Refresh();
+            await _webApiClient.GetAsync("api-stub/refresh");
 
             // Assert
-            var response = await _client.PostAsync(url, new StringContent(""));
+            var response = await _fakeApiClient.PostAsync(url, new StringContent(""));
             var returnResult = response.Content.ReadAsStringAsync().Result;
             returnResult.Should().BeEquivalentTo(JsonSerializer.Serialize(expected));
+        }
+
+        [Test]
+        public async Task removes_redundant_route_definitions()
+        {
+            // Arrange
+            await DataRepository.InsertOrReplace(HttpMethod.Get, "/url1", "");
+            await DataRepository.InsertOrReplace(HttpMethod.Get, "/url2", "");
+            await DataRepository.InsertOrReplace(HttpMethod.Get, "/url3", "");
+
+            await _webApiClient.GetAsync("api-stub/refresh");
+
+            await DataRepository.DropTableStorage();
+            await DataRepository.CreateTableStorage();
+            await DataRepository.InsertOrReplace(HttpMethod.Get, "/url4", "");
+
+            // Act
+            await _webApiClient.GetAsync("api-stub/refresh");
+
+            // Assert
+            _fakeApiClient.GetAsync("/url1").Result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+            _fakeApiClient.GetAsync("/url2").Result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+            _fakeApiClient.GetAsync("/url3").Result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+            _fakeApiClient.GetAsync("/url4").Result.StatusCode.Should().Be(StatusCodes.Status200OK);
         }
     }
 }
