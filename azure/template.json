@@ -31,9 +31,6 @@
         "loggingRedisConnectionString": {
             "type": "securestring"
         },
-        "appServiceName": {
-            "type": "string"
-        },
         "sharedBackEndAppServicePlanName": {
             "type": "string"
         },
@@ -44,9 +41,6 @@
             "type": "string"
         },
         "loggingRedisKey": {
-            "type": "string"
-        },
-        "TokenCertificateThumbprint": {
             "type": "string"
         },
         "customHostName": {
@@ -70,7 +64,8 @@
     "variables": {
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
         "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
-        "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]"
+        "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
+        "ApiAppServiceName": "[concat(variables('resourceNamePrefix'), 'api-as')]"
     },
     "resources": [
         {
@@ -83,32 +78,9 @@
             }
         },
         {
-            "apiVersion": "2017-05-10",
-            "name": "app-service-certificate",
+            "apiVersion": "2020-06-01",
+            "name": "api-app-service",
             "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('deploymentUrlBase'),'app-service-certificate.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "keyVaultCertificateName": {
-                        "value": "[parameters('keyVaultCertificateName')]"
-                    },
-                    "keyVaultName": {
-                        "value": "[parameters('sharedKeyVaultName')]"
-                    },
-                    "keyVaultResourceGroup": {
-                        "value": "[parameters('sharedManagementResourceGroup')]"
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "app-service-resources-deployment",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -118,7 +90,7 @@
                 },
                 "parameters": {
                     "appServiceName": {
-                        "value": "[parameters('appServiceName')]"
+                        "value": "[variables('ApiAppServiceName')]"
                     },
                     "appServicePlanName": {
                         "value": "[parameters('sharedBackEndAppServicePlanName')]"
@@ -154,10 +126,6 @@
                                 {
                                     "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
                                     "value": "[reference('app-insights-deployment').outputs.InstrumentationKey.value]"
-                                },
-                                {
-                                    "name": "WEBSITE_LOAD_CERTIFICATES",
-                                    "value": "[parameters('TokenCertificateThumbprint')]"
                                 }
                             ]
                         }
@@ -176,12 +144,40 @@
             "dependsOn": [
                 "app-service-certificate"
             ]
+        },
+                {
+            "apiVersion": "2020-06-01",
+            "name": "app-service-certificate",
+            "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'app-service-certificate.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "keyVaultCertificateName": {
+                        "value": "[parameters('keyVaultCertificateName')]"
+                    },
+                    "keyVaultName": {
+                        "value": "[parameters('sharedKeyVaultName')]"
+                    },
+                    "keyVaultResourceGroup": {
+                        "value": "[parameters('sharedManagementResourceGroup')]"
+                    }
+                }
+            }
         }
     ],
     "outputs": {
         "ResourceGroupName": {
             "type": "string",
             "value": "[variables('resourceGroupName')]"
+        },
+        "ApiServiceName": {
+            "type": "string",
+            "value": "[variables('ApiAppServiceName')]"
         }
     }
 }
