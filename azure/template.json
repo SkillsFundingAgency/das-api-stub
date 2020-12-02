@@ -61,7 +61,7 @@
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
         "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
         "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
-        "ApiAppServiceName": "[concat(variables('resourceNamePrefix'), 'api-as')]"
+        "apiappservicename": "[concat(variables('resourceNamePrefix'), 'api-as')]"
     },
     "resources": [
         {
@@ -92,7 +92,7 @@
                         "value": "[parameters('sharedKeyVaultName')]"
                     },
                     "keyVaultResourceGroup": {
-                        "value": "[parameters('sharedEnvResourceGroup')]"
+                        "value": "[parameters('sharedManagementResourceGroup')]"
                     }
                 }
             }
@@ -110,7 +110,7 @@
                 },
                 "parameters": {
                     "appServiceName": {
-                        "value": "[variables('ApiAppServiceName')]"
+                        "value": "[variables('apiappservicename')]"
                     },
                     "appServicePlanName": {
                         "value": "[parameters('sharedBackEndAppServicePlanName')]"
@@ -169,7 +169,7 @@
         },
         "ApiAppServiceName": {
             "type": "string",
-            "value": "[variables('ApiAppServiceName')]"
+            "value": "[variables('apiappservicename')]"
         }
     }
 }
