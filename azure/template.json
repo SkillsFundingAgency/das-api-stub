@@ -13,11 +13,7 @@
         },
         "configNames": {
             "type": "string",
-            "defaultValue": "__SolutionBaseName__"
-        },
-        "version": {
-            "type": "string",
-            "defaultValue": "1.0"
+            "defaultValue": "SFA.DAS.WireMockServiceAPI"
         },
         "tags": {
             "type": "object"
