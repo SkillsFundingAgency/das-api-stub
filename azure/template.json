@@ -92,7 +92,7 @@
                         "value": "[parameters('sharedKeyVaultName')]"
                     },
                     "keyVaultResourceGroup": {
-                        "value": "[parameters('sharedManagementResourceGroup')]"
+                        "value": "[parameters('sharedEnvResourceGroup')]"
                     }
                 }
             }
@@ -100,7 +100,7 @@
         {
             "apiVersion": "2020-06-01",
             "name": "api-app-service",
-            "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
+            "resourceGroup": "[variables('resourceGroupName')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -142,10 +142,6 @@
                                 {
                                     "name": "LoggingRedisKey",
                                     "value": "[parameters('loggingRedisKey')]"
-                                },
-                                {
-                                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                    "value": "[reference('app-insights-deployment').outputs.InstrumentationKey.value]"
                                 }
                             ]
                         }
