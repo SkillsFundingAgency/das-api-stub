@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using SFA.DAS.Testing.AzureStorageEmulator;
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -21,6 +22,7 @@ namespace RestApiStub.Tests
         [OneTimeSetUp]
         public void Setup()
         {
+            AzureStorageEmulatorManager.StartStorageEmulator();
             var builder = new WebHostBuilder().UseStartup<Startup>();
             _testServer = new TestServer(builder);
             _webApiClient = _testServer.CreateClient();
