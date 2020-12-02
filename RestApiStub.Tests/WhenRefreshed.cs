@@ -121,5 +121,21 @@ namespace RestApiStub.Tests
             _fakeApiClient.GetAsync("/url3").Result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
             _fakeApiClient.GetAsync("/url4").Result.StatusCode.Should().Be(StatusCodes.Status200OK);
         }
+
+        [Test]
+        public async Task new_GET_route_with_wildcarded_url_returns_data_from_storage()
+        {
+            // Arrange
+            var expected = new TestObject { Key = 123, Value = "String value 123" };
+            const string url = "/external-api/wildcard-*";
+            await DataRepository.InsertOrReplace(HttpMethod.Get, url, expected);
+
+            // Act
+            await _webApiClient.GetAsync("api-stub/refresh");
+
+            // Assert
+            var response = await _fakeApiClient.GetFromJsonAsync<TestObject>("/external-api/wildcard-test");
+            response.Should().BeEquivalentTo(expected);
+        }
     }
 }

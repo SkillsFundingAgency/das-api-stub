@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using SFA.DAS.Testing.AzureStorageEmulator;
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -80,13 +81,13 @@ namespace RestApiStub.Tests
         }
 
         [Test]
-        public async Task saved_data_is_available_via_fakeApi_after_save()
+        public async Task saved_data_is_available_after_save_and_refresh()
         {
             var expected = new TestObject { Key = 123, Value = "String value 123" };
             const HttpMethod httpMethod = HttpMethod.Get;
 
-            const string key = "/get-some-data";
-            var url = $"api-stub/save?httpMethod={httpMethod}&url={key}";
+            var key = $"/{Guid.NewGuid()}";
+            var url = $"api-stub/save?httpMethod={httpMethod}&url={key}&refresh=true";
 
             var response = await _webApiClient.PostAsJsonAsync(url, expected);
             response.EnsureSuccessStatusCode();
@@ -94,6 +95,22 @@ namespace RestApiStub.Tests
             var data = await _fakeApiClient.GetFromJsonAsync<TestObject>(key);
 
             data.Should().BeEquivalentTo(expected);
+        }
+
+        [Test]
+        public async Task saved_data_is_not_available_after_save_without_refresh()
+        {
+            var expected = new TestObject { Key = 123, Value = "String value 123" };
+            const HttpMethod httpMethod = HttpMethod.Get;
+
+            var key = $"/{Guid.NewGuid()}";
+            var url = $"api-stub/save?httpMethod={httpMethod}&url={key}&refresh=false";
+
+            var response = await _webApiClient.PostAsJsonAsync(url, expected);
+            response.EnsureSuccessStatusCode();
+
+            _fakeApiClient.GetAsync(key).Result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
         }
     }
 }

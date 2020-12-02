@@ -21,16 +21,19 @@ namespace RestApiStub.Controllers
 
         [HttpPost]
         [Route("save")]
-        public async Task<ActionResult> Save([FromQuery] HttpMethod httpMethod, [FromQuery] string url, [FromBody] object jsonData)
+        public async Task<ActionResult> Save([FromQuery] HttpMethod httpMethod, [FromQuery] string url, [FromQuery] bool refresh, [FromBody] object jsonData)
         {
             _logger.LogInformation("[api-stub/save] called with parameters {httpMethod}, {url}, {jsonData}", httpMethod, url, jsonData);
             try
             {
-                if (url == null) throw new ArgumentException(nameof(httpMethod));
-                if (jsonData == null) throw new ArgumentException(nameof(httpMethod));
+                if (url == null) throw new ArgumentException(nameof(url));
+                if (jsonData == null) throw new ArgumentException(nameof(jsonData));
 
-                await DataRepository.InsertOrReplace(httpMethod, url, jsonData)
-                    .ContinueWith(_ => _fakeApi.Refresh());
+                await DataRepository.InsertOrReplace(httpMethod, url, jsonData);
+                if (refresh)
+                {
+                    await _fakeApi.Refresh();
+                }
             }
             catch (Exception e)
             {
