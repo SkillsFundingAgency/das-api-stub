@@ -61,7 +61,8 @@
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
         "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
         "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
-        "apiappservicename": "[concat(variables('resourceNamePrefix'), 'api-as')]"
+        "apiappservicename": "[concat(variables('resourceNamePrefix'), 'api-as')]",
+        "app-insights-deployment": "[concat(variables('resourceNamePrefix'), '-ai')]"
     },
     "resources": [
         {
@@ -71,6 +72,27 @@
             "location": "[parameters('resourceGroupLocation')]",
             "tags": "[parameters('tags')]",
             "properties": {
+            }
+        },
+        {
+            "apiVersion": "2020-06-01",
+            "name": "app-insights-deployment",
+            "type": "Microsoft.Resources/deployments",
+            "location": "[parameters('resourceGroupLocation')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'), 'application-insights.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "appInsightsName": {
+                        "value": "[variables('app-insights-deployment')]"
+                    },
+                    "attachedService": {
+                        "value": "[variables('apiappservicename')]"
+                    }
+                }
             }
         },
         {
@@ -128,6 +150,10 @@
                         "value": {
                             "array": [
                                 {
+                                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                                "value": "[reference(variables('app-insights-deployment')).outputs.InstrumentationKey.value]"
+                                },
+                                {
                                     "name": "ConfigurationStorageConnectionString",
                                     "value": "[parameters('configurationStorageConnectionString')]"
                                 },
@@ -158,6 +184,7 @@
                 }
             },
             "dependsOn": [
+                "app-insights-deployment",
                 "app-service-certificate"
             ]
         }
