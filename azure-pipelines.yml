@@ -11,7 +11,7 @@ variables:
 - group: Wildcard Cert Variables v2
 
 pool:
-  name: 'DAS - Continuous Integration'
+  name: DAS - Continuous Integration
 
 resources:
   repositories:
@@ -36,6 +36,8 @@ stages:
 - stage: Deploy_TEST
   dependsOn: Build
   displayName: Deploy to TEST
+  pool:
+    name: DAS - Continuous Deployment
   variables:
   - group: DevTest Management Resources
   - group: TEST DevTest Shared Resources
@@ -63,6 +65,8 @@ stages:
 - stage: Deploy_TEST2
   dependsOn: Build
   displayName: Deploy to TEST2
+  pool:
+    name: DAS - Continuous Deployment
   variables:
   - group: DevTest Management Resources
   - group: TEST2 DevTest Shared Resources
