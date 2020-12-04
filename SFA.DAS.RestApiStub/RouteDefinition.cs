@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace RestApiStub
+namespace SFA.DAS.RestApiStub
 {
     internal class RouteDefinition
     {

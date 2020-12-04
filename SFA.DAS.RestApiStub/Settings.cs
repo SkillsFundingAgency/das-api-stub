@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace RestApiStub
+namespace SFA.DAS.RestApiStub
 {
     public static class Settings
     {

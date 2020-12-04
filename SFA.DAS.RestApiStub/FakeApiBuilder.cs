@@ -1,6 +1,6 @@
 ﻿using WireMock.Server;
 
-namespace RestApiStub
+namespace SFA.DAS.RestApiStub
 {
     public class FakeApiBuilder
     {

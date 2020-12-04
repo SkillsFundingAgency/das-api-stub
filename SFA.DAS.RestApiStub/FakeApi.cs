@@ -1,11 +1,12 @@
-﻿using System;
+﻿using RestApiStub;
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
 
-namespace RestApiStub
+namespace SFA.DAS.RestApiStub
 {
     public class FakeApi : IDisposable
     {

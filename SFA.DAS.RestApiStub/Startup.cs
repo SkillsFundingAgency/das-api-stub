@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
-namespace RestApiStub
+namespace SFA.DAS.RestApiStub
 {
     public class Startup
     {

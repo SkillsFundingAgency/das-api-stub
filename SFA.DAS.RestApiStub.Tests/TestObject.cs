@@ -1,4 +1,4 @@
-namespace RestApiStub.Tests
+namespace SFA.DAS.RestApiStub.Tests
 {
     public class TestObject
     {

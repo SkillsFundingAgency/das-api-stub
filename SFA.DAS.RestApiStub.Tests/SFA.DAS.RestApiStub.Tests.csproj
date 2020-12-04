@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RestApiStub\RestApiStub.csproj" />
+    <ProjectReference Include="..\SFA.DAS.RestApiStub\SFA.DAS.RestApiStub.csproj" />
   </ItemGroup>
 
 </Project>

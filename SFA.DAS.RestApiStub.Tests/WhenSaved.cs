@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using RestApiStub;
+using RestApiStub.Tests;
 using SFA.DAS.Testing.AzureStorageEmulator;
 using System;
 using System.Net;
@@ -12,7 +14,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
-namespace RestApiStub.Tests
+namespace SFA.DAS.RestApiStub.Tests
 {
     public class WhenSaved
     {

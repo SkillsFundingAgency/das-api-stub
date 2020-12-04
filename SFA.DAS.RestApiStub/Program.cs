@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using RestApiStub;
 
-namespace RestApiStub
+namespace SFA.DAS.RestApiStub
 {
     public class Program
     {
