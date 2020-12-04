@@ -25,7 +25,7 @@ jobs:
     inputs:
       command: publish
       publishWebProjects: false
-      projects: SFA.DAS.WireMockServiceApi/SFA.DAS.WireMockServiceApi.csproj
+      projects: src/SFA.DAS.WireMockServiceApi/SFA.DAS.WireMockServiceApi.csproj
       arguments: --configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/publish --no-restore --no-build
 
   - task: CopyFiles@2
