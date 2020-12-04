@@ -6,9 +6,6 @@ trigger:
 
 pr: none
 
-workspace:
-  clean: all
-
 variables:
 - group: Release Management Resources
 - group: Wildcard Cert Variables v2
