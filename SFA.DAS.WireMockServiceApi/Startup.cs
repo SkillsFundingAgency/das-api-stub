@@ -8,7 +8,7 @@ using Microsoft.OpenApi.Models;
 using System.IO;
 using System.Text.Json.Serialization;
 
-namespace SFA.DAS.RestApiStub
+namespace SFA.DAS.WireMockServiceApi
 {
     public class Startup
     {
@@ -28,7 +28,7 @@ namespace SFA.DAS.RestApiStub
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "RestApiStub", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SFA.DAS.WireMockServiceApi", Version = "v1" });
             });
 
             ReadSettings(services);
@@ -73,7 +73,7 @@ namespace SFA.DAS.RestApiStub
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "RestApiStub v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SFA.DAS.WireMockServiceApi v1"));
             }
 
             app.UseHttpsRedirection();

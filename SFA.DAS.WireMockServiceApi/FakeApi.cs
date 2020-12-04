@@ -5,7 +5,7 @@ using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
 
-namespace SFA.DAS.RestApiStub
+namespace SFA.DAS.WireMockServiceApi
 {
     public class FakeApi : IDisposable
     {

@@ -1,22 +1,21 @@
-﻿using System;
+﻿using Microsoft.Azure.Cosmos.Table;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Cosmos.Table;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
-namespace SFA.DAS.RestApiStub
+namespace SFA.DAS.WireMockServiceApi
 {
-    public class DataRepository
+    public static class DataRepository
     {
         private static CloudTable _table;
-        private const string TableName = "RestApiStubData";
 
         public static async Task CreateTableStorage()
         {
-            await CreateTableAsync(TableName);
+            await CreateTableAsync(Settings.StorageTableName);
         }
 
         private static async Task CreateTableAsync(string tableName)

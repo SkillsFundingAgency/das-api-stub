@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SFA.DAS.RestApiStub\SFA.DAS.RestApiStub.csproj" />
+    <ProjectReference Include="..\SFA.DAS.WireMockServiceApi\SFA.DAS.WireMockServiceApi.csproj" />
   </ItemGroup>
 
 </Project>

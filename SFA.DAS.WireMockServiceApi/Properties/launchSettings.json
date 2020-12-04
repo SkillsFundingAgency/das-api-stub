@@ -17,7 +17,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "RestApiStub": {
+    "SFA.DAS.WireMockServiceApi": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,

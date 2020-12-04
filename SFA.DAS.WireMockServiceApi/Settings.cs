@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace SFA.DAS.RestApiStub
+namespace SFA.DAS.WireMockServiceApi
 {
     public static class Settings
     {
         public static int WireMockPort { get; set; } = 8086;
         public static string ConnectionString { get; set; } = "UseDevelopmentStorage=true";
         public static string EnvironmentName { get; set; } = "DEV";
+        public static string StorageTableName { get; set; } = "WireMockServiceApiData";
 
         public static void Set(IConfiguration config)
         {
@@ -18,6 +19,9 @@ namespace SFA.DAS.RestApiStub
 
             var port = config.GetValue<int?>("WireMockPort");
             if (port.HasValue) WireMockPort = port.Value;
+
+            var storageTableName = config.GetValue<string>("StorageTableName");
+            if (!string.IsNullOrEmpty(storageTableName)) StorageTableName = storageTableName;
         }
     }
 }

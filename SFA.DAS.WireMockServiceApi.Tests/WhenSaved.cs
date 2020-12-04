@@ -12,7 +12,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
-namespace SFA.DAS.RestApiStub.Tests
+namespace SFA.DAS.WireMockServiceApi.Tests
 {
     public class WhenSaved
     {

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace SFA.DAS.RestApiStub
+namespace SFA.DAS.WireMockServiceApi
 {
     public class Program
     {

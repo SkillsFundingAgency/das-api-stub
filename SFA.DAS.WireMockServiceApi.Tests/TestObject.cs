@@ -1,4 +1,4 @@
-namespace SFA.DAS.RestApiStub.Tests
+namespace SFA.DAS.WireMockServiceApi.Tests
 {
     public class TestObject
     {

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.RestApiStub.Controllers
+namespace SFA.DAS.WireMockServiceApi.Controllers
 {
     [ApiController]
     [Route("api-stub")]
