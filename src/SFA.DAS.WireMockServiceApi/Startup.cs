@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using SFA.DAS.Configuration.AzureTableStorage;
 using System.IO;
 using System.Text.Json.Serialization;
 
@@ -40,24 +39,6 @@ namespace SFA.DAS.WireMockServiceApi
         private static void ReadSettings(IServiceCollection services)
         {
             var config = services.BuildServiceProvider().GetService<IConfiguration>();
-
-            var configBuilder = new ConfigurationBuilder()
-                .AddConfiguration(config)
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddEnvironmentVariables();
-#if !DEBUG
-            configBuilder.AddAzureTableStorage(options =>
-            {
-                options.ConfigurationKeys = config["ConfigNames"].Split(",");
-                options.StorageConnectionString = config["ConfigurationStorageConnectionString"];
-                options.EnvironmentName = config["EnvironmentName"];
-                options.PreFixConfigurationKeys = false;
-            });
-#endif
-
-            config = configBuilder.Build();
-            services.Replace(ServiceDescriptor.Singleton(typeof(IConfiguration), config));
-
             Settings.Set(config);
         }
 

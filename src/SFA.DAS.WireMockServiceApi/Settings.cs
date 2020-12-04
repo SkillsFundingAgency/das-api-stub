@@ -11,7 +11,7 @@ namespace SFA.DAS.WireMockServiceApi
 
         public static void Set(IConfiguration config)
         {
-            var connectionString = config.GetConnectionString("AzureWebJobsStorage");
+            var connectionString = config.GetConnectionString("SharedStorageAccountConnectionString");
             if (!string.IsNullOrEmpty(connectionString)) ConnectionString = connectionString;
 
             var environment = config.GetValue<string>("EnvironmentName");
