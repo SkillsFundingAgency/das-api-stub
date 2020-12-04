@@ -11,17 +11,13 @@
         "serviceName": {
             "type": "string"
         },
-        "configNames": {
-            "type": "string",
-            "defaultValue": "SFA.DAS.WireMockServiceAPI"
-        },
         "tags": {
             "type": "object"
         },
         "resourceGroupLocation": {
             "type": "string"
-        },        
-        "configurationStorageConnectionString": {
+        },
+        "sharedStorageAccountConnectionString": {
             "type": "securestring"
         },
         "loggingRedisConnectionString": {
@@ -154,12 +150,8 @@
                                 "value": "[reference('app-insights-deployment').outputs.InstrumentationKey.value]"
                                 },
                                 {
-                                    "name": "ConfigurationStorageConnectionString",
-                                    "value": "[parameters('configurationStorageConnectionString')]"
-                                },
-                                {
-                                    "name": "ConfigNames",
-                                    "value": "[parameters('configNames')]"
+                                    "name": "sharedStorageAccountConnectionString",
+                                    "value": "[parameters('sharedStorageAccountConnectionString')]"
                                 },
                                 {
                                     "name": "EnvironmentName",

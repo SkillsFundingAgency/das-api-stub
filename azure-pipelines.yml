@@ -52,7 +52,7 @@ stages:
       ParametersPath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/azure/template.parameters.json
       TemplateSecrets:
         LoggingRedisConnectionString: $(LoggingRedisConnectionString)
-        ConfigurationStorageConnectionString: $(ConfigurationStorageConnectionString)
+        SharedStorageAccountConnectionString: $(sharedStorageAccountConnectionString)
 
   - template: pipeline-templates/job/deploy-api.yml
     parameters:
