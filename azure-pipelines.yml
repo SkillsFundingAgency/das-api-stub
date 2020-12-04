@@ -58,4 +58,31 @@ stages:
       DeploymentApprovals: DEV
       ServiceConnection: SFA-DAS-DevTest-ARM
       AppServiceName: $(FindApprenticeshipOuterApiAppServiceName)
-      DeploymentPackagePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/SFA.DAS.WireMockServiceApi.Api.zip
+      DeploymentPackagePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/SFA.DAS.WireMockServiceApi.zip
+
+- stage: Deploy_TEST2
+  dependsOn: Build
+  displayName: Deploy to TEST2
+  variables:
+  - group: DevTest Management Resources
+  - group: TEST2 DevTest Shared Resources
+  jobs:
+  - template: pipeline-templates/job/arm-deploy.yml
+    parameters:
+      ServiceConnection: SFA-DAS-DevTest-ARM
+      SubscriptionId: $(SubscriptionId)
+      Location: $(ResourceGroupLocation)
+      Environment: DEV
+      TemplatePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/azure/template.json
+      ParametersPath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/azure/template.parameters.json
+      TemplateSecrets:
+        LoggingRedisConnectionString: $(LoggingRedisConnectionString)
+        ConfigurationStorageConnectionString: $(ConfigurationStorageConnectionString)
+
+  - template: pipeline-templates/job/deploy-api.yml
+    parameters:
+      DeploymentName: Deploy_WireMockServiceAPI      
+      DeploymentApprovals: DEV
+      ServiceConnection: SFA-DAS-DevTest-ARM
+      AppServiceName: $(FindApprenticeshipOuterApiAppServiceName)
+      DeploymentPackagePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/SFA.DAS.WireMockServiceApi.zip
