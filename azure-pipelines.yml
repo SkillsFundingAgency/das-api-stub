@@ -58,4 +58,4 @@ stages:
       DeploymentApprovals: DEV
       ServiceConnection: SFA-DAS-DevTest-ARM
       AppServiceName: $(FindApprenticeshipOuterApiAppServiceName)
-      DeploymentPackagePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/SFA.DAS.RestApiStub.Api.zip
+      DeploymentPackagePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/SFA.DAS.WireMockServiceApi.Api.zip
