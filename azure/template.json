@@ -150,7 +150,7 @@
                                 "value": "[reference('app-insights-deployment').outputs.InstrumentationKey.value]"
                                 },
                                 {
-                                    "name": "sharedStorageAccountConnectionString",
+                                    "name": "SharedStorageAccountConnectionString",
                                     "value": "[parameters('sharedStorageAccountConnectionString')]"
                                 },
                                 {
