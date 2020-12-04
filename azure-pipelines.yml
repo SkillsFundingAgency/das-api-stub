@@ -34,7 +34,7 @@ stages:
   - group: DevTest Management Resources
   - group: AT DevTest Shared Resources
   jobs:
-  - template: pipeline-templates/arm-deploy.yml
+  - template: pipeline-templates/job/arm-deploy.yml
     parameters:
       ServiceConnection: SFA-DAS-DevTest-ARM
       SubscriptionId: $(SubscriptionId)
