@@ -40,7 +40,8 @@
             "type": "string"
         },
         "customHostName": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": ""
         },
         "appServiceAllowedIPs": {
             "type": "array",
@@ -150,11 +151,15 @@
                             "array": [
                                 {
                                 "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                "value": "[reference(variables('app-insights-deployment')).outputs.InstrumentationKey.value]"
+                                "value": "[reference('app-insights-deployment').outputs.InstrumentationKey.value]"
                                 },
                                 {
                                     "name": "ConfigurationStorageConnectionString",
                                     "value": "[parameters('configurationStorageConnectionString')]"
+                                },
+                                {
+                                    "name": "ConfigNames",
+                                    "value": "[parameters('configNames')]"
                                 },
                                 {
                                     "name": "EnvironmentName",
