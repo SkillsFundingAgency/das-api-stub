@@ -193,7 +193,7 @@
             "type": "string",
             "value": "[variables('resourceGroupName')]"
         },
-        "apiAppServiceName": {
+        "ApiAppServiceName": {
             "type": "string",
             "value": "[variables('apiAppServiceName')]"
         }
