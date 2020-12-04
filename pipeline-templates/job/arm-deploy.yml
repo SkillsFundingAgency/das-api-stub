@@ -18,7 +18,7 @@ jobs:
     runOnce:
       deploy:
         steps:
-        - template: ../step/arm-deploy.yml
+        - template: azure-pipelines-templates/deploy/step/arm-deploy.yml@das-platform-building-blocks
           parameters:
             Location: ${{ parameters.Location }}
             ParametersPath: ${{ parameters.ParametersPath }}
