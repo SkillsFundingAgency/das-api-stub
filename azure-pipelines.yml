@@ -26,7 +26,7 @@ resources:
   - repository: das-platform-automation
     type: github
     name: SkillsFundingAgency/das-platform-automation
-    ref: refs/heads/master
+    ref: refs/tags/4.2.4
     endpoint: GitHub (SFA) 
 
 stages:
