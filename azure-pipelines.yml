@@ -23,13 +23,7 @@ resources:
     type: github
     name: SkillsFundingAgency/das-platform-building-blocks
     ref: refs/heads/master
-    endpoint: GitHub (SFA)
-  # das-employer-config probably not needed
-  pipelines:
-  - pipeline: das-employer-config
-    project: Digital Apprenticeship Service
-    source: das-employer-config
-    branch: EI-659-API-Stub    
+    endpoint: GitHub (SFA) 
 
 stages:
 - stage: Build
@@ -43,7 +37,7 @@ stages:
   - group: DevTest Management Resources
   - group: AT DevTest Shared Resources
   jobs:
-  - template: azure-pipelines-templates/deploy/job/arm-deploy.yml@das-platform-building-blocks
+  - template: pipelines-templates/arm-deploy.yml
     parameters:
       ServiceConnection: SFA-DAS-DevTest-ARM
       SubscriptionId: $(SubscriptionId)
@@ -51,7 +45,6 @@ stages:
       Environment: DEV
       TemplatePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/azure/template.json
       ParametersPath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/azure/template.parameters.json
-      ConfigSchemaPath: $(Pipeline.Workspace)/das-employer-config/Configuration/das-wiremockservice-api  ### probably not needed
       TemplateSecrets:
         LoggingRedisConnectionString: $(LoggingRedisConnectionString)
         ConfigurationStorageConnectionString: $(ConfigurationStorageConnectionString)
