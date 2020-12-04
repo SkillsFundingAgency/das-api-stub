@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using SFA.DAS.Configuration.AzureTableStorage;
 using System.IO;
 using System.Text.Json.Serialization;
 
