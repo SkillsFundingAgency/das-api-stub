@@ -56,10 +56,9 @@ stages:
 
   - template: pipeline-templates/job/deploy-api.yml
     parameters:
-      DeploymentName: Deploy_WireMockServiceAPI      
+      DeploymentName: Deploy_WireMockServiceAPI
       DeploymentApprovals: DEV
       ServiceConnection: SFA-DAS-DevTest-ARM
-      AppServiceName: $(FindApprenticeshipOuterApiAppServiceName)
       DeploymentPackagePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/SFA.DAS.WireMockServiceApi.zip
 
 - stage: Deploy_TEST2
@@ -85,8 +84,7 @@ stages:
 
   - template: pipeline-templates/job/deploy-api.yml
     parameters:
-      DeploymentName: Deploy_WireMockServiceAPI      
+      DeploymentName: Deploy_WireMockServiceAPI
       DeploymentApprovals: DEV
       ServiceConnection: SFA-DAS-DevTest-ARM
-      AppServiceName: $(FindApprenticeshipOuterApiAppServiceName)
       DeploymentPackagePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/SFA.DAS.WireMockServiceApi.zip
