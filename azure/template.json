@@ -61,8 +61,7 @@
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
         "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
         "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
-        "apiappservicename": "[concat(variables('resourceNamePrefix'), 'api-as')]",
-        "app-insights-deployment": "[concat(variables('resourceNamePrefix'), '-ai')]"
+        "apiAppServiceName": "[concat(variables('resourceNamePrefix'), 'api-as')]"
     },
     "resources": [
         {
@@ -87,10 +86,10 @@
                 },
                 "parameters": {
                     "appInsightsName": {
-                        "value": "[variables('app-insights-deployment')]"
+                        "value": "[variables('apiAppServiceName')]"
                     },
                     "attachedService": {
-                        "value": "[variables('apiappservicename')]"
+                        "value": "[variables('apiAppServiceName')]"
                     }
                 }
             }
@@ -132,7 +131,7 @@
                 },
                 "parameters": {
                     "appServiceName": {
-                        "value": "[variables('apiappservicename')]"
+                        "value": "[variables('apiAppServiceName')]"
                     },
                     "appServicePlanName": {
                         "value": "[parameters('sharedBackEndAppServicePlanName')]"
@@ -194,9 +193,9 @@
             "type": "string",
             "value": "[variables('resourceGroupName')]"
         },
-        "ApiAppServiceName": {
+        "apiAppServiceName": {
             "type": "string",
-            "value": "[variables('apiappservicename')]"
+            "value": "[variables('apiAppServiceName')]"
         }
     }
 }
