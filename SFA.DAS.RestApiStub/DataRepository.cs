@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos.Table;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
-namespace RestApiStub
+namespace SFA.DAS.RestApiStub
 {
     public class DataRepository
     {
@@ -56,7 +56,7 @@ namespace RestApiStub
         {
             var record = new JsonData
             {
-                PartitionKey = Settings.Environment,
+                PartitionKey = Settings.EnvironmentName,
                 RowKey = $"{method}_{Uri.EscapeDataString(url)}",
                 Url = Uri.UnescapeDataString(url),
                 HttpMethod = method.ToString(),

@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using System.IO;
 using System.Text.Json.Serialization;
 
 namespace SFA.DAS.RestApiStub
@@ -37,6 +39,24 @@ namespace SFA.DAS.RestApiStub
         private static void ReadSettings(IServiceCollection services)
         {
             var config = services.BuildServiceProvider().GetService<IConfiguration>();
+
+            var configBuilder = new ConfigurationBuilder()
+                .AddConfiguration(config)
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddEnvironmentVariables();
+#if !DEBUG
+            configBuilder.AddAzureTableStorage(options =>
+            {
+                options.ConfigurationKeys = config["ConfigNames"].Split(",");
+                options.StorageConnectionString = config["ConfigurationStorageConnectionString"];
+                options.EnvironmentName = config["EnvironmentName"];
+                options.PreFixConfigurationKeys = false;
+            });
+#endif
+
+            config = configBuilder.Build();
+            services.Replace(ServiceDescriptor.Singleton(typeof(IConfiguration), config));
+
             Settings.Set(config);
         }
 

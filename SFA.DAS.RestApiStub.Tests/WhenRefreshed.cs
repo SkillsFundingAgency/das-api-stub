@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using RestApiStub;
-using RestApiStub.Tests;
 using SFA.DAS.Testing.AzureStorageEmulator;
 using System;
 using System.Net.Http;

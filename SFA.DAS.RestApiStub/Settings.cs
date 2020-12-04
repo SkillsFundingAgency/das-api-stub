@@ -6,7 +6,7 @@ namespace SFA.DAS.RestApiStub
     {
         public static int WireMockPort { get; set; } = 8086;
         public static string ConnectionString { get; set; } = "UseDevelopmentStorage=true";
-        public static string Environment { get; set; } = "DEV";
+        public static string EnvironmentName { get; set; } = "DEV";
 
         public static void Set(IConfiguration config)
         {
@@ -14,7 +14,7 @@ namespace SFA.DAS.RestApiStub
             if (!string.IsNullOrEmpty(connectionString)) ConnectionString = connectionString;
 
             var environment = config.GetValue<string>("EnvironmentName");
-            if (!string.IsNullOrEmpty(environment)) Environment = environment;
+            if (!string.IsNullOrEmpty(environment)) EnvironmentName = environment;
 
             var port = config.GetValue<int?>("WireMockPort");
             if (port.HasValue) WireMockPort = port.Value;
