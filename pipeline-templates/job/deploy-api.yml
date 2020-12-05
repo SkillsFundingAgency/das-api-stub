@@ -1,0 +1,24 @@
+parameters:
+  DeploymentName:
+  DeploymentApprovals:
+  ServiceConnection:
+  DeploymentPackagePath:
+
+jobs:
+- deployment: ${{ parameters.DeploymentName }}
+  pool:
+    name: DAS - Continuous Deployment
+  dependsOn: DeployInfrastructure
+  variables:
+    ResourceGroupName: $[dependencies.DeployInfrastructure.outputs['DeployInfrastructure.ArmOutputs.ResourceGroupName']]
+    ApiAppServiceName: $[dependencies.DeployInfrastructure.outputs['DeployInfrastructure.ArmOutputs.ApiAppServiceName']]
+  environment: ${{ parameters.DeploymentApprovals }}
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        - template: azure-pipelines-templates/deploy/step/app-deploy.yml@das-platform-building-blocks
+          parameters:
+            ServiceConnection: ${{ parameters.ServiceConnection }}
+            AppServiceName: $(ApiAppServiceName)
+            DeploymentPackagePath: ${{ parameters.DeploymentPackagePath }}

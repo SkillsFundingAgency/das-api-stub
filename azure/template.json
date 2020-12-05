@@ -11,17 +11,13 @@
         "serviceName": {
             "type": "string"
         },
-        "configNames": {
-            "type": "string",
-            "defaultValue": "SFA.DAS.WireMockServiceAPI"
-        },
         "tags": {
             "type": "object"
         },
         "resourceGroupLocation": {
             "type": "string"
-        },        
-        "configurationStorageConnectionString": {
+        },
+        "sharedStorageAccountConnectionString": {
             "type": "securestring"
         },
         "loggingRedisConnectionString": {
@@ -40,7 +36,8 @@
             "type": "string"
         },
         "customHostName": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": ""
         },
         "appServiceAllowedIPs": {
             "type": "array",
@@ -77,7 +74,7 @@
             "apiVersion": "2020-06-01",
             "name": "app-insights-deployment",
             "type": "Microsoft.Resources/deployments",
-            "location": "[parameters('resourceGroupLocation')]",
+            "resourceGroup": "[variables('resourceGroupName')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -150,11 +147,11 @@
                             "array": [
                                 {
                                 "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                "value": "[reference(variables('app-insights-deployment')).outputs.InstrumentationKey.value]"
+                                "value": "[reference('app-insights-deployment').outputs.InstrumentationKey.value]"
                                 },
                                 {
-                                    "name": "ConfigurationStorageConnectionString",
-                                    "value": "[parameters('configurationStorageConnectionString')]"
+                                    "name": "SharedStorageAccountConnectionString",
+                                    "value": "[parameters('sharedStorageAccountConnectionString')]"
                                 },
                                 {
                                     "name": "EnvironmentName",
