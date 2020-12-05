@@ -2,10 +2,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using System.IO;
 using System.Text.Json.Serialization;
 
 namespace SFA.DAS.WireMockServiceApi
@@ -33,7 +31,7 @@ namespace SFA.DAS.WireMockServiceApi
 
             ReadSettings(services);
             DataRepository.CreateTableStorage().ConfigureAwait(false);
-            StartWireMockServer(services);
+            //  StartWireMockServer(services);
         }
 
         private static void ReadSettings(IServiceCollection services)
@@ -42,7 +40,7 @@ namespace SFA.DAS.WireMockServiceApi
             Settings.Set(config);
         }
 
-        private static void StartWireMockServer(IServiceCollection services)
+        public static void StartWireMockServer(IServiceCollection services)
         {
             var fakeApi = FakeApiBuilder.Create(Settings.WireMockPort).Build();
             services.AddSingleton(fakeApi);
