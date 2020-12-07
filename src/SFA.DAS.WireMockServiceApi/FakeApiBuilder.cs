@@ -1,4 +1,7 @@
-﻿using WireMock.Server;
+﻿using System;
+using System.Security.Cryptography.X509Certificates;
+using WireMock.Server;
+using WireMock.Settings;
 
 namespace SFA.DAS.WireMockServiceApi
 {
@@ -17,7 +20,29 @@ namespace SFA.DAS.WireMockServiceApi
 
         private FakeApiBuilder(int port)
         {
-            _server = WireMockServer.StartWithAdminInterface(port, true);
+            using X509Store store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+            store.Open(OpenFlags.ReadOnly);
+            IWireMockServerSettings settings = new WireMockServerSettings()
+            {
+                Port = port,
+                StartAdminInterface = true,
+                UseSSL = true,
+                CertificateSettings = new WireMockCertificateSettings()
+                {
+                    X509StoreName = store.Name
+                }
+            };
+            store.Close();
+
+            try
+            {
+                _server = WireMockServer.Start(settings);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Available certificates: " + store.Certificates);
+                throw;
+            }
         }
     }
 }
