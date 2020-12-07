@@ -17,7 +17,7 @@ namespace SFA.DAS.WireMockServiceApi
 
         private FakeApiBuilder(int port)
         {
-            _server = WireMockServer.StartWithAdminInterface(port);
+            _server = WireMockServer.StartWithAdminInterface(port, true);
         }
     }
 }
