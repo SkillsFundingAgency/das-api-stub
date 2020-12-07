@@ -1,12 +1,12 @@
-﻿{
+{
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "SFA.DAS.WireMockServiceApi": {
+    "WireMock.Net.WebApplication": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,
-      "launchUrl": "swagger",
-      "applicationUrl": "https://localhost:5001;http://localhost:5000",
+      "launchUrl": "__admin/settings",
+      "applicationUrl": "http://localhost:56514/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
