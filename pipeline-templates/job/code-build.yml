@@ -32,7 +32,7 @@ jobs:
     inputs:
       command: publish
       publishWebProjects: false
-      projects: src/SFA.DAS.WireMockServiceApi/SFA.DAS.WireMockServiceApi.csproj
+      projects: src/WireMock.Net.WebApplication.NETCore3/WireMock.Net.WebApplication.NETCore3.csproj
       arguments: --configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/publish --no-restore --no-build
 
   - task: CopyFiles@2
