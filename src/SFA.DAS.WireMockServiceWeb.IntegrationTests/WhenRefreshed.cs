@@ -19,6 +19,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
 {
     public class WhenRefreshed
     {
+        private const int Port = 8888;
         private TestServer _testServer;
         private HttpClient _wireMockApiClient;
         private HttpClient _webApiClient;
@@ -30,25 +31,44 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
         public void Setup()
         {
             AzureStorageEmulatorManager.StartStorageEmulator();
-            var builder = new WebHostBuilder().UseStartup<Startup>();
+            BuildWireMockClient();
+            BuildWireMockHost();
+        }
+
+        private void BuildWireMockClient()
+        {
+            var settings = new Dictionary<string, string>
+            {
+                {"ApiStubSettings:WireMockServiceApiBaseUrl", $"http://localhost:{Port}"}
+            };
+
+            var builder = new WebHostBuilder()
+                .ConfigureAppConfiguration((context, config) =>
+                {
+                    config.AddEnvironmentVariables();
+                    config.AddInMemoryCollection(settings);
+                })
+                .UseStartup<Startup>();
+
             _testServer = new TestServer(builder);
             _webApiClient = _testServer.CreateClient();
+            _dataRepository = (IDataRepository)_testServer.Services.GetService(typeof(IDataRepository));
+        }
 
+        private void BuildWireMockHost()
+        {
             IDictionary<string, string> settings = new Dictionary<string, string>();
-            settings.Add("WireMockServerSettings:Port", "8888");
+            settings.Add("WireMockServerSettings:Port", $"{Port}");
             settings.Add("WireMockServerSettings:StartAdminInterface", "true");
 
             var wireMockHostBuilder = new WebHostBuilder()
                 .ConfigureAppConfiguration((context, config) =>
-                    {
-                        config.AddEnvironmentVariables();
-                        config.AddInMemoryCollection(settings);
-                    })
-                    .UseStartup<WireMockServerStartup>();
+                {
+                    config.AddInMemoryCollection(settings);
+                })
+                .UseStartup<WireMockServerStartup>();
             _wireMockServer = new TestServer(wireMockHostBuilder);
-            _wireMockApiClient = new HttpClient { BaseAddress = new Uri("http://localhost:8888") };
-
-            _dataRepository = (IDataRepository)_testServer.Services.GetService(typeof(IDataRepository));
+            _wireMockApiClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{Port}") };
         }
 
         [OneTimeTearDown]
@@ -68,22 +88,6 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             var response = await _wireMockApiClient.GetAsync(url);
             response.StatusCode.Should().Be(200);
         }
-
-        [Test]
-        public async Task get_mappings_returns_mappings()
-        {
-            // Arrange
-            await AddSampleMapping();
-
-            // Act
-            var response = await _webApiClient.GetAsync("api-stub/mappings");
-
-            // Assert
-            response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadAsStringAsync();
-            result.Should().Contain("Hello world!");
-        }
-
         private async Task AddSampleMapping()
         {
             const string url = "/__admin/mappings";
@@ -105,9 +109,23 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             response.EnsureSuccessStatusCode();
         }
 
+        [Test]
+        public async Task api_stub_mappings_get_returns_wiremock_mappings()
+        {
+            // Arrange
+            await AddSampleMapping();
+
+            // Act
+            var response = await _webApiClient.GetAsync("api-stub/mappings");
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadAsStringAsync();
+            result.Should().Contain("Hello world!");
+        }
 
         [Test]
-        public async Task new_GET_route_returns_expected_data_from_storage()
+        public async Task api_stub_refresh_new_http_get_route_returns_expected_data_from_storage()
         {
             // Arrange
             var expected = new TestObject { Key = 123, Value = "String value 123" };
@@ -118,12 +136,31 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             await _webApiClient.GetAsync("api-stub/refresh");
 
             // Assert
+
+            await api_stub_mappings_get_returns_wiremock_mappings();
+
             var response = await _wireMockApiClient.GetFromJsonAsync<TestObject>(url);
             response.Should().BeEquivalentTo(expected);
         }
 
         [Test]
-        public async Task new_GET_route_with_query_parameters_returns_expected_data_from_storage()
+        public async Task api_stub_refresh_new_http_get_route_with_wildcarded_url_returns_data_from_storage()
+        {
+            // Arrange
+            var expected = new TestObject { Key = 123, Value = "String value 123" };
+            const string url = "/external-api/wildcard-*";
+            await _dataRepository.InsertOrReplace(HttpMethod.Get, url, expected);
+
+            // Act
+            await _webApiClient.GetAsync("api-stub/refresh");
+
+            // Assert
+            var response = await _wireMockApiClient.GetFromJsonAsync<TestObject>("/external-api/wildcard-test");
+            response.Should().BeEquivalentTo(expected);
+        }
+
+        [Test]
+        public async Task api_stub_refresh_new_http_get_route_with_query_parameters_returns_expected_data_from_storage()
         {
             // Arrange
             var expected = new TestObject { Key = 123, Value = "String value 123" };
@@ -139,7 +176,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
         }
 
         [Test]
-        public async Task new_POST_route_returns_expected_data_from_storage()
+        public async Task api_stub_refresh_new_http_post_route_returns_expected_data_from_storage()
         {
             // Arrange
             var expected = new TestObject { Key = 456, Value = "String value 456" };
@@ -156,7 +193,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
         }
 
         [Test]
-        public async Task removes_redundant_route_definitions()
+        public async Task api_stub_refresh_removes_redundant_route_definitions()
         {
             // Arrange
             await _dataRepository.InsertOrReplace(HttpMethod.Get, "/url1", "");
@@ -177,22 +214,6 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             _wireMockApiClient.GetAsync("/url2").Result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
             _wireMockApiClient.GetAsync("/url3").Result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
             _wireMockApiClient.GetAsync("/url4").Result.StatusCode.Should().Be(StatusCodes.Status200OK);
-        }
-
-        [Test]
-        public async Task new_GET_route_with_wildcarded_url_returns_data_from_storage()
-        {
-            // Arrange
-            var expected = new TestObject { Key = 123, Value = "String value 123" };
-            const string url = "/external-api/wildcard-*";
-            await _dataRepository.InsertOrReplace(HttpMethod.Get, url, expected);
-
-            // Act
-            await _webApiClient.GetAsync("api-stub/refresh");
-
-            // Assert
-            var response = await _wireMockApiClient.GetFromJsonAsync<TestObject>("/external-api/wildcard-test");
-            response.Should().BeEquivalentTo(expected);
         }
     }
 }

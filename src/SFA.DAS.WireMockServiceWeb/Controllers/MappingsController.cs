@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.WireMockServiceWeb.Controllers
@@ -12,7 +11,6 @@ namespace SFA.DAS.WireMockServiceWeb.Controllers
     {
         private readonly ILogger<MappingsController> _logger;
         private readonly IWireMockHttpService _service;
-        private readonly HttpClient _client;
 
         public MappingsController(ILogger<MappingsController> logger, IWireMockHttpService service)
         {

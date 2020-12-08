@@ -16,6 +16,7 @@ namespace SFA.DAS.WireMockServiceWeb
         Task InsertOrReplace(HttpMethod method, string url, object data);
         Task DropTableStorage();
         Task CreateTableStorage();
+        Task<IEnumerable<DataRepository.JsonData>> GetAll();
     }
 
     public class DataRepository : IDataRepository

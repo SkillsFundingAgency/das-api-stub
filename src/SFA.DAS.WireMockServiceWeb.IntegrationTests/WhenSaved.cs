@@ -18,38 +18,66 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
 {
     public class WhenSaved
     {
+        private const int Port = 8888;
         private TestServer _testServer;
         private HttpClient _wireMockApiClient;
         private HttpClient _webApiClient;
         private TestServer _wireMockServer;
-        private string _mapping;
-        private IDataRepository DataRepository;
+        private IDataRepository _dataRepository;
 
         [OneTimeSetUp]
         public void Setup()
         {
             AzureStorageEmulatorManager.StartStorageEmulator();
-            var builder = new WebHostBuilder().UseStartup<Startup>();
-            _testServer = new TestServer(builder);
-            _webApiClient = _testServer.CreateClient();
+            BuildWireMockClient();
+            BuildWireMockHost();
+        }
+        private void BuildWireMockClient()
+        {
+            var settings = new Dictionary<string, string>
+            {
+                {"ApiStubSettings:WireMockServiceApiBaseUrl", $"http://localhost:{Port}"}
+            };
 
-            IDictionary<string, string> settings = new Dictionary<string, string>();
-            settings.Add("WireMockServerSettings:Port", "8888");
-            settings.Add("WireMockServerSettings:StartAdminInterface", "true");
-
-            var wireMockHostBuilder = new WebHostBuilder()
+            var builder = new WebHostBuilder()
                 .ConfigureAppConfiguration((context, config) =>
                 {
                     config.AddEnvironmentVariables();
                     config.AddInMemoryCollection(settings);
                 })
-                .UseStartup<WireMockServerStartup>();
-            _wireMockServer = new TestServer(wireMockHostBuilder);
-            _wireMockApiClient = new HttpClient { BaseAddress = new Uri("http://localhost:8888") };
+                .UseStartup<Startup>();
 
-            DataRepository = (IDataRepository)_testServer.Services.GetService(typeof(IDataRepository));
+            _testServer = new TestServer(builder);
+            _webApiClient = _testServer.CreateClient();
+            _dataRepository = (IDataRepository)_testServer.Services.GetService(typeof(IDataRepository));
         }
 
+        private void BuildWireMockHost()
+        {
+            IDictionary<string, string> settings = new Dictionary<string, string>();
+            settings.Add("WireMockServerSettings:Port", $"{Port}");
+            settings.Add("WireMockServerSettings:StartAdminInterface", "true");
+
+            var wireMockHostBuilder = new WebHostBuilder()
+                .ConfigureAppConfiguration((context, config) =>
+                {
+                    config.AddInMemoryCollection(settings);
+                })
+                .UseStartup<WireMockServerStartup>();
+            _wireMockServer = new TestServer(wireMockHostBuilder);
+            _wireMockApiClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{Port}") };
+        }
+
+
+        [OneTimeTearDown]
+        public async Task TearDown()
+        {
+            _wireMockApiClient?.Dispose();
+            _webApiClient?.Dispose();
+            _testServer?.Dispose();
+            _wireMockServer?.Dispose();
+            await _dataRepository.DropTableStorage();
+        }
 
         [Test]
         public async Task stores_data_in_local_storage()
@@ -63,7 +91,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             var response = await _webApiClient.PostAsJsonAsync(url, expected);
             response.EnsureSuccessStatusCode();
 
-            var data = await DataRepository.GetData(httpMethod, key);
+            var data = await _dataRepository.GetData(httpMethod, key);
 
             data.Should().BeEquivalentTo(JsonSerializer.Serialize(expected));
         }
@@ -85,7 +113,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             response = await _webApiClient.PostAsJsonAsync(url, expected);
             response.EnsureSuccessStatusCode();
 
-            var data = await DataRepository.GetData(httpMethod, key);
+            var data = await _dataRepository.GetData(httpMethod, key);
 
             data.Should().BeEquivalentTo(JsonSerializer.Serialize(expected));
         }

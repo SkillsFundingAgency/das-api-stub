@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Text.Json.Serialization;
@@ -38,15 +39,14 @@ namespace SFA.DAS.WireMockServiceWeb
 
         private void ConfigureWireMockService(IServiceCollection services)
         {
-            var wireMockServerBaseUrl = Configuration.GetValue<string>("WireMockServiceApiBaseUrl");
-            var httpClient = new WireMockHttpClient
+            services.AddSingleton<IWireMockHttpService>(provider =>
             {
-                BaseAddress = new Uri(wireMockServerBaseUrl)
-            };
-            services.AddSingleton(httpClient);
-            services.AddSingleton<IWireMockHttpService, WireMockHttpService>();
+                var opts = provider.GetService<IOptions<ApiStubOptions>>().Value;
+                var repo = provider.GetService<IDataRepository>();
+                var httpClient = new WireMockHttpClient { BaseAddress = new Uri(opts.WireMockServiceApiBaseUrl) };
+                return new WireMockHttpService(httpClient, repo);
+            });
         }
-
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

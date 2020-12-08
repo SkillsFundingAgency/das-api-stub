@@ -17,15 +17,15 @@ namespace SFA.DAS.WireMockServiceWeb
 
     public class WireMockHttpService : IWireMockHttpService
     {
-        WireMockServer _mockServer = WireMockServer.Start();
-
         private readonly WireMockHttpClient _client;
         private readonly IDataRepository _repository;
+        private readonly WireMockServer _mockServer;
 
         public WireMockHttpService(WireMockHttpClient client, IDataRepository repository)
         {
             _client = client;
             _repository = repository;
+            _mockServer = WireMockServer.Start();
         }
 
         public async Task<string> GetMappings()
@@ -33,25 +33,37 @@ namespace SFA.DAS.WireMockServiceWeb
             return await _client.GetStringAsync("/__admin/mappings");
         }
 
-
         public async Task Refresh()
         {
-            //MockServer.ResetMappings();
-            //var routes = await DataRepository.GetAll();
+            await ResetMappings();
+            var routes = await _repository.GetAll();
 
-            //foreach (var route in routes)
-            //{
-            //    ConfigureRoute(new RouteDefinition(route));
-            //}
+            foreach (var route in routes)
+            {
+                AddWireMockMapping(new RouteDefinition(route));
+            }
+
+            foreach (var mappings in _mockServer.MappingModels)
+            {
+                var response = await _client.PostAsJsonAsync("/__admin/mappings", mappings);
+                response.EnsureSuccessStatusCode();
+            }
         }
 
-        private void ConfigureRoute(RouteDefinition route)
+        private async Task ResetMappings()
         {
+            var response = await _client.PostNothingAsync("/__admin/mappings/reset");
+            response.EnsureSuccessStatusCode();
+            _mockServer.ResetMappings();
+        }
+
+        private void AddWireMockMapping(RouteDefinition route)
+        {
+            _mockServer.ResetMappings();
             var request = Request
                 .Create()
                 .UsingMethod(route.HttpMethod)
                 .WithPath(route.BaseUrl);
-
 
             foreach (var (key, value) in route.Parameters)
             {
