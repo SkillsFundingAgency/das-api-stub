@@ -1,10 +1,12 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using SFA.DAS.Testing.AzureStorageEmulator;
+using SFA.DAS.WireMockServiceApi;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -17,8 +19,11 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
     public class WhenSaved
     {
         private TestServer _testServer;
+        private HttpClient _wireMockApiClient;
         private HttpClient _webApiClient;
-        private HttpClient _fakeApiClient;
+        private TestServer _wireMockServer;
+        private string _mapping;
+        private IDataRepository DataRepository;
 
         [OneTimeSetUp]
         public void Setup()
@@ -27,19 +32,24 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             var builder = new WebHostBuilder().UseStartup<Startup>();
             _testServer = new TestServer(builder);
             _webApiClient = _testServer.CreateClient();
-            _fakeApiClient = new HttpClient { BaseAddress = new Uri("http://localhost:" + Settings.WireMockPort) };
+
+            IDictionary<string, string> settings = new Dictionary<string, string>();
+            settings.Add("WireMockServerSettings:Port", "8888");
+            settings.Add("WireMockServerSettings:StartAdminInterface", "true");
+
+            var wireMockHostBuilder = new WebHostBuilder()
+                .ConfigureAppConfiguration((context, config) =>
+                {
+                    config.AddEnvironmentVariables();
+                    config.AddInMemoryCollection(settings);
+                })
+                .UseStartup<WireMockServerStartup>();
+            _wireMockServer = new TestServer(wireMockHostBuilder);
+            _wireMockApiClient = new HttpClient { BaseAddress = new Uri("http://localhost:8888") };
+
+            DataRepository = (IDataRepository)_testServer.Services.GetService(typeof(IDataRepository));
         }
 
-        [OneTimeTearDown]
-        public async Task TearDown()
-        {
-            var fakeApi = _testServer.Services.GetService<FakeApi>();
-            fakeApi?.Dispose();
-            _fakeApiClient.Dispose();
-            _webApiClient.Dispose();
-            _testServer.Dispose();
-            await DataRepository.DropTableStorage();
-        }
 
         [Test]
         public async Task stores_data_in_local_storage()
@@ -53,7 +63,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             var response = await _webApiClient.PostAsJsonAsync(url, expected);
             response.EnsureSuccessStatusCode();
 
-            var data = await DataRepository.GetJsonData(httpMethod, key);
+            var data = await DataRepository.GetData(httpMethod, key);
 
             data.Should().BeEquivalentTo(JsonSerializer.Serialize(expected));
         }
@@ -75,7 +85,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             response = await _webApiClient.PostAsJsonAsync(url, expected);
             response.EnsureSuccessStatusCode();
 
-            var data = await DataRepository.GetJsonData(httpMethod, key);
+            var data = await DataRepository.GetData(httpMethod, key);
 
             data.Should().BeEquivalentTo(JsonSerializer.Serialize(expected));
         }
@@ -92,7 +102,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             var response = await _webApiClient.PostAsJsonAsync(url, expected);
             response.EnsureSuccessStatusCode();
 
-            var data = await _fakeApiClient.GetFromJsonAsync<TestObject>(key);
+            var data = await _wireMockApiClient.GetFromJsonAsync<TestObject>(key);
 
             data.Should().BeEquivalentTo(expected);
         }
@@ -109,7 +119,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             var response = await _webApiClient.PostAsJsonAsync(url, expected);
             response.EnsureSuccessStatusCode();
 
-            _fakeApiClient.GetAsync(key).Result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            _wireMockApiClient.GetAsync(key).Result.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
         }
     }

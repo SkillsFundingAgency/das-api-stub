@@ -10,12 +10,12 @@ namespace SFA.DAS.WireMockServiceWeb.Controllers
     public class RefreshController : ControllerBase
     {
         private readonly ILogger<RefreshController> _logger;
-        private readonly FakeApi _fakeApi;
+        private readonly IWireMockHttpService _service;
 
-        public RefreshController(ILogger<RefreshController> logger, FakeApi fakeApi)
+        public RefreshController(ILogger<RefreshController> logger, IWireMockHttpService service)
         {
             _logger = logger;
-            _fakeApi = fakeApi;
+            _service = service;
         }
 
         [HttpGet]
@@ -25,7 +25,7 @@ namespace SFA.DAS.WireMockServiceWeb.Controllers
             _logger.LogInformation("[api-stub/refresh] called");
             try
             {
-                await _fakeApi.Refresh();
+                await _service.Refresh();
             }
             catch (Exception e)
             {

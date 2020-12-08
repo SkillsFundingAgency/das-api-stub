@@ -19,7 +19,7 @@ namespace SFA.DAS.WireMockServiceWeb
         {
             MockServer = mockServer;
             BaseAddress = MockServer.Urls[0];
-            Refresh().ConfigureAwait(false);
+           // Refresh().ConfigureAwait(false);
         }
 
         public void Dispose()
@@ -44,36 +44,6 @@ namespace SFA.DAS.WireMockServiceWeb
             _disposed = true;
         }
 
-        public async Task Refresh()
-        {
-            MockServer.ResetMappings();
-            var routes = await DataRepository.GetAll();
-
-            foreach (var route in routes)
-            {
-                ConfigureRoute(new RouteDefinition(route));
-            }
-        }
-
-        private void ConfigureRoute(RouteDefinition route)
-        {
-            var request = Request
-                .Create()
-                .UsingMethod(route.HttpMethod)
-                .WithPath(route.BaseUrl);
-
-            foreach (var (key, value) in route.Parameters)
-            {
-                request.WithParam(key, value);
-            }
-
-            MockServer
-                .Given(request)
-                .RespondWith(
-                    Response.Create()
-                        .WithHeader("Content-Type", "application/json")
-                        .WithBody(route.Data)
-                        .WithStatusCode(HttpStatusCode.OK));
-        }
+      
     }
 }

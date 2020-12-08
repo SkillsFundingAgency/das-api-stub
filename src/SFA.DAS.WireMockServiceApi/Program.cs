@@ -1,8 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using WireMock.Settings;
 
 namespace SFA.DAS.WireMockServiceApi
 {
@@ -12,19 +9,16 @@ namespace SFA.DAS.WireMockServiceApi
         {
             CreateHostBuilder(args).Build().Run();
         }
-
-        private static IHostBuilder CreateHostBuilder(string[] args)
-            => Host.CreateDefaultBuilder(args)
-                .ConfigureServices((host, services) => ConfigureServices(services, host.Configuration));
-
-        private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddLogging(logging => logging.AddConsole().AddDebug());
-
-            services.AddTransient<IWireMockService, WireMockService>();
-            services.Configure<WireMockServerSettings>(configuration.GetSection("WireMockServerSettings"));
-
-            services.AddHostedService<App>();
-        }
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<WireMockServerStartup>();
+                });
     }
+
+    //private static IHostBuilder CreateHostBuilder(string[] args)
+    //        => Host.CreateDefaultBuilder(args)
+    //            .ConfigureServices((host, services) => ConfigureServices(services, host.Configuration));
+
 }
