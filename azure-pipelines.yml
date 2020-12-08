@@ -41,6 +41,9 @@ stages:
   variables:
   - group: DevTest Management Resources
   - group: TEST DevTest Shared Resources
+  ##TO DO: Update to actualy base url
+  - name: WireMockServiceApiBaseUrl
+    value: https://das-test-wmsapi-as.azurewebsites.net  
   jobs:
   - template: pipeline-templates/job/arm-deploy.yml
     parameters:
@@ -76,6 +79,9 @@ stages:
   variables:
   - group: DevTest Management Resources
   - group: TEST2 DevTest Shared Resources
+  ##TO DO: Update to actualy base url
+  - name: WireMockServiceApiBaseUrl
+    value: https://das-test2-wmsapi-as.azurewebsites.net
   jobs:
   - template: pipeline-templates/job/arm-deploy.yml
     parameters:
