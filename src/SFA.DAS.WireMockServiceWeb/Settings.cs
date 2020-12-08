@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
+using System;
 
-namespace SFA.DAS.WireMockServiceApi
+namespace SFA.DAS.WireMockServiceWeb
 {
     public static class Settings
     {
@@ -8,9 +9,11 @@ namespace SFA.DAS.WireMockServiceApi
         public static string ConnectionString { get; set; } = "UseDevelopmentStorage=true";
         public static string EnvironmentName { get; set; } = "DEV";
         public static string StorageTableName { get; set; } = "WireMockServiceApiData";
+        public static string WireMockServiceApiBaseUrl { get; set; }
 
         public static void Set(IConfiguration config)
         {
+
             var connectionString = config.GetConnectionString("SharedStorageAccountConnectionString");
             if (!string.IsNullOrEmpty(connectionString)) ConnectionString = connectionString;
 
@@ -20,8 +23,10 @@ namespace SFA.DAS.WireMockServiceApi
             var port = config.GetValue<int?>("WireMockPort");
             if (port.HasValue) WireMockPort = port.Value;
 
-            var storageTableName = config.GetValue<string>("StorageTableName");
-            if (!string.IsNullOrEmpty(storageTableName)) StorageTableName = storageTableName;
+            var wireMockServiceApiBaseUrl = config.GetValue<string>("WireMockServiceApiBaseUrl");
+            if (!string.IsNullOrEmpty(WireMockServiceApiBaseUrl))
+                throw new InvalidOperationException($"Configuration setting for: {nameof(WireMockServiceApiBaseUrl)} is missing");
+            WireMockServiceApiBaseUrl = wireMockServiceApiBaseUrl;
         }
     }
 }

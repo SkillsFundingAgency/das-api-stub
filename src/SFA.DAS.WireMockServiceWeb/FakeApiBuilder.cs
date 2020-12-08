@@ -3,7 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using WireMock.Server;
 using WireMock.Settings;
 
-namespace SFA.DAS.WireMockServiceApi
+namespace SFA.DAS.WireMockServiceWeb
 {
     public class FakeApiBuilder
     {

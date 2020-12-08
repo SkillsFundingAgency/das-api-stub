@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.30711.63
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.WireMockServiceApi", "SFA.DAS.WireMockServiceApi\SFA.DAS.WireMockServiceApi.csproj", "{FB23A58E-122D-47C2-855F-B8E024C9622F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.WireMockServiceApi.Tests", "SFA.DAS.WireMockServiceApi.Tests\SFA.DAS.WireMockServiceApi.Tests.csproj", "{E486EFDA-85BE-470E-A977-D5E29DEE5C1B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.WireMockServiceWeb.IntegrationTests", "SFA.DAS.WireMockServiceWeb.IntegrationTests\SFA.DAS.WireMockServiceWeb.IntegrationTests.csproj", "{E486EFDA-85BE-470E-A977-D5E29DEE5C1B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WireMock.Net.WebApplication.NETCore3", "WireMock.Net.WebApplication.NETCore3\WireMock.Net.WebApplication.NETCore3.csproj", "{CB79C45C-A304-4F02-AD6C-4C40732EE320}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.WireMockServiceWeb", "SFA.DAS.WireMockServiceWeb\SFA.DAS.WireMockServiceWeb.csproj", "{E56EDE74-8FED-4C43-A92B-EC49E6EE58C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{E486EFDA-85BE-470E-A977-D5E29DEE5C1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E486EFDA-85BE-470E-A977-D5E29DEE5C1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E486EFDA-85BE-470E-A977-D5E29DEE5C1B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CB79C45C-A304-4F02-AD6C-4C40732EE320}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CB79C45C-A304-4F02-AD6C-4C40732EE320}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CB79C45C-A304-4F02-AD6C-4C40732EE320}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CB79C45C-A304-4F02-AD6C-4C40732EE320}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E56EDE74-8FED-4C43-A92B-EC49E6EE58C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E56EDE74-8FED-4C43-A92B-EC49E6EE58C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E56EDE74-8FED-4C43-A92B-EC49E6EE58C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E56EDE74-8FED-4C43-A92B-EC49E6EE58C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

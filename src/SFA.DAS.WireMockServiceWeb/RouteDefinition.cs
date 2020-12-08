@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace SFA.DAS.WireMockServiceApi
+namespace SFA.DAS.WireMockServiceWeb
 {
     internal class RouteDefinition
     {
