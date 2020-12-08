@@ -1,6 +1,6 @@
 ﻿using WireMock.Server;
 
-namespace WireMock.Net.WebApplication
+namespace SFA.DAS.WireMockServiceApi
 {
     public interface IWireMockService
     {

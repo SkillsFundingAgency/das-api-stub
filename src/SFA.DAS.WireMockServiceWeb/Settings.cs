@@ -10,7 +10,7 @@ namespace SFA.DAS.WireMockServiceWeb
         public static string EnvironmentName { get; set; } = "DEV";
         public static string StorageTableName { get; set; } = "WireMockServiceApiData";
         public static string WireMockServiceApiBaseUrl { get; set; }
-
+        
         public static void Set(IConfiguration config)
         {
 

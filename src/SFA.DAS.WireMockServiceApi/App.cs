@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace WireMock.Net.WebApplication
+namespace SFA.DAS.WireMockServiceApi
 {
     public class App : IHostedService
     {

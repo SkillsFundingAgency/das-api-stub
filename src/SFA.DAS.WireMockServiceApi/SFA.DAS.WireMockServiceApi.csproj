@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
-    <StartupObject>WireMock.Net.WebApplication.Program</StartupObject>
-    <AssemblyName>WireMock.Net.WebApplication</AssemblyName>
-    <RootNamespace>WireMock.Net.WebApplication</RootNamespace>
+    <StartupObject>SFA.DAS.WireMockServiceApi.Program</StartupObject>
+    <AssemblyName>SFA.DAS.WireMockServiceApi</AssemblyName>
+    <RootNamespace>SFA.DAS.WireMockServiceApi</RootNamespace>
     <UserSecretsId>efcf4a18-fd7c-4622-1111-336d65290599</UserSecretsId>
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
   </PropertyGroup>

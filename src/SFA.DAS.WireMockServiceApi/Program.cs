@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using WireMock.Settings;
 
-namespace WireMock.Net.WebApplication
+namespace SFA.DAS.WireMockServiceApi
 {
     public class Program
     {

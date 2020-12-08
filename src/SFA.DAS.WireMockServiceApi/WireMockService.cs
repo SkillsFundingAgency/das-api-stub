@@ -7,7 +7,7 @@ using WireMock.Logging;
 using WireMock.Server;
 using WireMock.Settings;
 
-namespace WireMock.Net.WebApplication
+namespace SFA.DAS.WireMockServiceApi
 {
     public class WireMockService : IWireMockService
     {
