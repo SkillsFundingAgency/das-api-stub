@@ -59,7 +59,7 @@ stages:
       DeploymentName: Deploy_WireMockServiceAPI
       DeploymentApprovals: DEV
       ServiceConnection: SFA-DAS-DevTest-ARM
-      DeploymentPackagePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/SFA.DAS.WireMockServiceApi.zip
+      DeploymentPackagePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/WireMock.Net.WebApplication.NETCore3.zip
 
   - template: pipeline-templates/job/web-deploy.yml
     parameters:

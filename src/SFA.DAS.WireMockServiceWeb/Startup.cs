@@ -2,13 +2,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using System.IO;
 using System.Text.Json.Serialization;
 
-namespace SFA.DAS.WireMockServiceApi
+namespace SFA.DAS.WireMockServiceWeb
 {
     public class Startup
     {
@@ -28,12 +25,12 @@ namespace SFA.DAS.WireMockServiceApi
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SFA.DAS.WireMockServiceApi", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SFA.DAS.WireMockServiceWeb", Version = "v1" });
             });
 
             ReadSettings(services);
             DataRepository.CreateTableStorage().ConfigureAwait(false);
-            StartWireMockServer(services);
+            //  StartWireMockServer(services);
         }
 
         private static void ReadSettings(IServiceCollection services)
@@ -42,7 +39,7 @@ namespace SFA.DAS.WireMockServiceApi
             Settings.Set(config);
         }
 
-        private static void StartWireMockServer(IServiceCollection services)
+        public static void StartWireMockServer(IServiceCollection services)
         {
             var fakeApi = FakeApiBuilder.Create(Settings.WireMockPort).Build();
             services.AddSingleton(fakeApi);
@@ -51,12 +48,9 @@ namespace SFA.DAS.WireMockServiceApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SFA.DAS.WireMockServiceApi v1"));
-            }
+            app.UseDeveloperExceptionPage();
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SFA.DAS.WireMockServiceWeb v1"));
 
             app.UseHttpsRedirection();
 

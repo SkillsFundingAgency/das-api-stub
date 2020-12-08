@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.WireMockServiceApi.Controllers
+namespace SFA.DAS.WireMockServiceWeb.Controllers
 {
     [ApiController]
     [Route("api-stub")]

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
-namespace SFA.DAS.WireMockServiceApi
+namespace SFA.DAS.WireMockServiceWeb
 {
     public static class DataRepository
     {

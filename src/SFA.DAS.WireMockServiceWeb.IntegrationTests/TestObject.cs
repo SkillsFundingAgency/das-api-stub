@@ -1,4 +1,4 @@
-namespace SFA.DAS.WireMockServiceApi.Tests
+namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
 {
     public class TestObject
     {
