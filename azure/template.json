@@ -26,16 +26,26 @@
         "sharedBackEndAppServicePlanName": {
             "type": "string"
         },
+        "sharedFrontEndAppServicePlanName": {
+            "type": "string"
+        },
         "sharedEnvResourceGroup": {
             "type": "string"
         },
         "sharedBackEndSubnetResourceId": {
             "type": "string"
         },
+        "sharedFrontEndSubnetResourceId": {
+            "type": "string"
+        },
         "loggingRedisKey": {
             "type": "string"
         },
-        "customHostName": {
+        "apiCustomHostName": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "uiCustomHostName": {
             "type": "string",
             "defaultValue": ""
         },
@@ -52,13 +62,17 @@
         },
         "sharedManagementResourceGroup": {
             "type": "string"
+        },
+        "wireMockServiceApiBaseUrl": {
+            "type": "string"
         }
     },
     "variables": {
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
         "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
         "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
-        "apiAppServiceName": "[concat(variables('resourceNamePrefix'), 'api-as')]"
+        "apiAppServiceName": "[concat(variables('resourceNamePrefix'), 'api-as')]",
+        "uiAppServiceName": "[concat(variables('resourceNamePrefix'), 'ui-as')]"
     },
     "resources": [
         {
@@ -72,7 +86,7 @@
         },
         {
             "apiVersion": "2020-06-01",
-            "name": "app-insights-deployment",
+            "name": "api-app-insights",
             "type": "Microsoft.Resources/deployments",
             "resourceGroup": "[variables('resourceGroupName')]",
             "properties": {
@@ -93,7 +107,7 @@
         },
         {
             "apiVersion": "2020-06-01",
-            "name": "app-service-certificate",
+            "name": "api-app-service-certificate",
             "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -147,7 +161,7 @@
                             "array": [
                                 {
                                 "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                "value": "[reference('app-insights-deployment').outputs.InstrumentationKey.value]"
+                                "value": "[reference('api-app-insights').outputs.InstrumentationKey.value]"
                                 },
                                 {
                                     "name": "SharedStorageAccountConnectionString",
@@ -169,20 +183,128 @@
                         }
                     },
                     "customHostName": {
-                        "value": "[parameters('customHostName')]"
+                        "value": "[parameters('apiCustomHostName')]"
                     },
                     "certificateThumbprint": {
-                        "value": "[reference('app-service-certificate').outputs.certificateThumbprint.value]"
+                        "value": "[reference('api-app-service-certificate').outputs.certificateThumbprint.value]"
                     },
                     "ipSecurityRestrictions": {
                         "value": "[parameters('appServiceAllowedIPs')]"
                     }
                 }
             },
-            "dependsOn": [
-                "app-insights-deployment",
-                "app-service-certificate"
-            ]
+            "dependsOn": []
+        },
+        {
+            "apiVersion": "2020-06-01",
+            "name": "ui-app-insights",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[variables('resourceGroupName')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'), 'application-insights.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "appInsightsName": {
+                        "value": "[variables('uiAppServiceName')]"
+                    },
+                    "attachedService": {
+                        "value": "[variables('uiAppServiceName')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2020-06-01",
+            "name": "ui-app-service-certificate",
+            "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'app-service-certificate.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "keyVaultCertificateName": {
+                        "value": "[parameters('keyVaultCertificateName')]"
+                    },
+                    "keyVaultName": {
+                        "value": "[parameters('sharedKeyVaultName')]"
+                    },
+                    "keyVaultResourceGroup": {
+                        "value": "[parameters('sharedManagementResourceGroup')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2020-06-01",
+            "name": "ui-api-app-service",
+            "resourceGroup": "[variables('resourceGroupName')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'app-service-v2.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "appServiceName": {
+                        "value": "[variables('uiAppServiceName')]"
+                    },
+                    "appServicePlanName": {
+                        "value": "[parameters('sharedFrontEndAppServicePlanName')]"
+                    },
+                    "appServicePlanResourceGroup": {
+                        "value": "[parameters('sharedEnvResourceGroup')]"
+                    },
+                    "subnetResourceId": {
+                        "value": "[parameters('sharedFrontEndSubnetResourceId')]"
+                    },
+                    "deployStagingSlot": {
+                        "value": true
+                    },
+                    "appServiceAppSettings": {
+                        "value": {
+                            "array": [
+                                {
+                                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                                    "value": "[reference('ui-app-insights').outputs.InstrumentationKey.value]"
+                                },
+                                {
+                                    "name": "WireMockServiceApiBaseUrl",
+                                    "value": "[parameters('wireMockServiceApiBaseUrl')]"
+                                },
+                                {
+                                    "name": "EnvironmentName",
+                                    "value": "[parameters('environmentName')]"
+                                },
+                                {
+                                    "name": "LoggingRedisConnectionString",
+                                    "value": "[parameters('loggingRedisConnectionString')]"
+                                },
+                                {
+                                    "name": "LoggingRedisKey",
+                                    "value": "[parameters('loggingRedisKey')]"
+                                }
+                            ]
+                        }
+                    },
+                    "customHostName": {
+                        "value": "[parameters('uiCustomHostName')]"
+                    },
+                    "certificateThumbprint": {
+                        "value": "[reference('ui-app-service-certificate').outputs.certificateThumbprint.value]"
+                    },
+                    "ipSecurityRestrictions": {
+                        "value": "[parameters('appServiceAllowedIPs')]"
+                    }
+                }
+            },
+            "dependsOn": []
         }
     ],
     "outputs": {
@@ -193,6 +315,10 @@
         "ApiAppServiceName": {
             "type": "string",
             "value": "[variables('apiAppServiceName')]"
+        },
+        "UiAppServiceName": {
+            "type": "string",
+            "value": "[variables('uiAppServiceName')]"
         }
     }
 }

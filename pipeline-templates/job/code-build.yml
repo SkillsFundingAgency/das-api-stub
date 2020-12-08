@@ -19,20 +19,28 @@ jobs:
   - template: azure-pipelines-templates/build/step/app-build.yml@das-platform-building-blocks
 
   # - task: DotNetCoreCLI@2
-  #   displayName: Tests
+  #   displayName: Integration Tests
   #   inputs:
   #     command: test
-  #     projects: '**/*.Tests.csproj'
+  #     projects: '**/*.IntegrationTests.csproj'
   #     arguments: --configuration $(buildConfiguration) --no-build
 
   - template: azure-pipelines-templates/build/step/dependency-check.yml@das-platform-building-blocks
 
   - task: DotNetCoreCLI@2
-    displayName: Publish Wire Mock Service Api
+    displayName: Publish WireMock Service Api
     inputs:
       command: publish
       publishWebProjects: false
-      projects: src/WireMock.Net.WebApplication.NETCore3/WireMock.Net.WebApplication.NETCore3.csproj
+      projects: src/SFA.DAS.WireMockServiceApi/SFA.DAS.WireMockServiceApi.csproj
+      arguments: --configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/publish --no-restore --no-build
+
+  - task: DotNetCoreCLI@2
+    displayName: Publish WireMock Service Web
+    inputs:
+      command: publish
+      publishWebProjects: false
+      projects: src/SFA.DAS.WireMockServiceWeb/SFA.DAS.WireMockServiceWeb.csproj
       arguments: --configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/publish --no-restore --no-build
 
   - task: CopyFiles@2
