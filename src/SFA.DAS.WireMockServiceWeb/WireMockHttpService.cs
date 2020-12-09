@@ -41,11 +41,11 @@ namespace SFA.DAS.WireMockServiceWeb
             foreach (var route in routes)
             {
                 AddWireMockMapping(new RouteDefinition(route));
-            } 
+            }
 
-            foreach (var mappings in _mockServer.MappingModels)
+            foreach (var mapping in _mockServer.MappingModels)
             {
-                var response = await _client.PostAsJsonAsync("/__admin/mappings", mappings);
+                var response = await _client.PostAsJsonAsync("/__admin/mappings", mapping);
                 response.EnsureSuccessStatusCode();
             }
         }
@@ -59,7 +59,6 @@ namespace SFA.DAS.WireMockServiceWeb
 
         private void AddWireMockMapping(RouteDefinition route)
         {
-            _mockServer.ResetMappings();
             var request = Request
                 .Create()
                 .UsingMethod(route.HttpMethod)
