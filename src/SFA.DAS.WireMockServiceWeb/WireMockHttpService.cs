@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using WireMock.RequestBuilders;
@@ -25,7 +26,16 @@ namespace SFA.DAS.WireMockServiceWeb
         {
             _client = client;
             _repository = repository;
-            _mockServer = WireMockServer.Start();
+            try
+            {
+                _mockServer = WireMockServer.Start(Guid.NewGuid().ToString());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("FAILED TO START WIREMOCK SERVICE");
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task<string> GetMappings()
@@ -41,11 +51,11 @@ namespace SFA.DAS.WireMockServiceWeb
             foreach (var route in routes)
             {
                 AddWireMockMapping(new RouteDefinition(route));
-            } 
+            }
 
-            foreach (var mappings in _mockServer.MappingModels)
+            foreach (var mapping in _mockServer.MappingModels)
             {
-                var response = await _client.PostAsJsonAsync("/__admin/mappings", mappings);
+                var response = await _client.PostAsJsonAsync("/__admin/mappings", mapping);
                 response.EnsureSuccessStatusCode();
             }
         }
@@ -59,7 +69,6 @@ namespace SFA.DAS.WireMockServiceWeb
 
         private void AddWireMockMapping(RouteDefinition route)
         {
-            _mockServer.ResetMappings();
             var request = Request
                 .Create()
                 .UsingMethod(route.HttpMethod)
