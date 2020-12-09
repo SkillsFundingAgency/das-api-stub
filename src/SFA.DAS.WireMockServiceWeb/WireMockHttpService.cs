@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using WireMock.RequestBuilders;
@@ -25,7 +26,16 @@ namespace SFA.DAS.WireMockServiceWeb
         {
             _client = client;
             _repository = repository;
-            _mockServer = WireMockServer.Start();
+            try
+            {
+                _mockServer = WireMockServer.Start(Guid.NewGuid().ToString());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("FAILED TO START WIREMOCK SERVICE");
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task<string> GetMappings()
