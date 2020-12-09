@@ -37,7 +37,7 @@ namespace SFA.DAS.WireMockServiceWeb
 
         private async Task CreateTableAsync(string tableName)
         {
-            var storageAccount = CloudStorageAccount.Parse(_options.ConnectionString);
+            var storageAccount = CloudStorageAccount.Parse(_options.StorageAccountConnectionString);
             var tableClient = storageAccount.CreateCloudTableClient();
 
             _table = tableClient.GetTableReference(tableName);

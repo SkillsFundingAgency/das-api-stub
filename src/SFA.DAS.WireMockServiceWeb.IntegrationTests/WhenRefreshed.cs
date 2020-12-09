@@ -12,6 +12,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
@@ -134,6 +135,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
 
             // Act
             await _webApiClient.GetAsync("api-stub/refresh");
+            Thread.Sleep(TimeSpan.FromSeconds(1));
 
             // Assert
 
@@ -153,6 +155,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
 
             // Act
             await _webApiClient.GetAsync("api-stub/refresh");
+            Thread.Sleep(TimeSpan.FromSeconds(1));
 
             // Assert
             var response = await _wireMockApiClient.GetFromJsonAsync<TestObject>("/external-api/wildcard-test");
@@ -169,6 +172,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
 
             // Act
             await _webApiClient.GetAsync("api-stub/refresh");
+            Thread.Sleep(TimeSpan.FromSeconds(1));
 
             // Assert
             var response = await _wireMockApiClient.GetFromJsonAsync<TestObject>(url);
@@ -185,6 +189,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
 
             // Act
             await _webApiClient.GetAsync("api-stub/refresh");
+            Thread.Sleep(TimeSpan.FromSeconds(1));
 
             // Assert
             var response = await _wireMockApiClient.PostAsync(url, new StringContent(""));
@@ -208,6 +213,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
 
             // Act
             await _webApiClient.GetAsync("api-stub/refresh");
+            Thread.Sleep(TimeSpan.FromSeconds(1));
 
             // Assert
             _wireMockApiClient.GetAsync("/url1").Result.StatusCode.Should().Be(StatusCodes.Status404NotFound);

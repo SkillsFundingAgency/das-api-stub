@@ -41,7 +41,7 @@ namespace SFA.DAS.WireMockServiceWeb
             foreach (var route in routes)
             {
                 AddWireMockMapping(new RouteDefinition(route));
-            }
+            } 
 
             foreach (var mappings in _mockServer.MappingModels)
             {
