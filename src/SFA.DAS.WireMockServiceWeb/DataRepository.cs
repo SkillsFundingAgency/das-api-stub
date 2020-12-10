@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,20 +8,36 @@ using System.Threading;
 using System.Threading.Tasks;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
-namespace SFA.DAS.WireMockServiceApi
+namespace SFA.DAS.WireMockServiceWeb
 {
-    public static class DataRepository
+    public interface IDataRepository
     {
-        private static CloudTable _table;
+        Task<string> GetData(HttpMethod method, string url);
+        Task InsertOrReplace(HttpMethod method, string url, object data);
+        Task DropTableStorage();
+        Task CreateTableStorage();
+        Task<IEnumerable<DataRepository.JsonData>> GetAll();
+    }
 
-        public static async Task CreateTableStorage()
+    public class DataRepository : IDataRepository
+    {
+        private readonly ApiStubOptions _options;
+        private CloudTable _table;
+
+        public DataRepository(IOptions<ApiStubOptions> options)
         {
-            await CreateTableAsync(Settings.StorageTableName);
+            _options = options.Value;
+            CreateTableStorage().ConfigureAwait(false);
         }
 
-        private static async Task CreateTableAsync(string tableName)
+        public async Task CreateTableStorage()
         {
-            var storageAccount = CloudStorageAccount.Parse(Settings.ConnectionString);
+            await CreateTableAsync(_options.StorageTableName);
+        }
+
+        private async Task CreateTableAsync(string tableName)
+        {
+            var storageAccount = CloudStorageAccount.Parse(_options.StorageAccountConnectionString);
             var tableClient = storageAccount.CreateCloudTableClient();
 
             _table = tableClient.GetTableReference(tableName);
@@ -43,7 +60,7 @@ namespace SFA.DAS.WireMockServiceApi
 
         }
 
-        public static async Task<string> GetJsonData(HttpMethod method, string url)
+        public async Task<string> GetData(HttpMethod method, string url)
         {
             var alldata = await GetEntitiesFromTable<JsonData>();
             var item = alldata.SingleOrDefault(x =>
@@ -51,11 +68,11 @@ namespace SFA.DAS.WireMockServiceApi
             return item?.Data;
         }
 
-        public static async Task InsertOrReplace(HttpMethod method, string url, object data)
+        public async Task InsertOrReplace(HttpMethod method, string url, object data)
         {
             var record = new JsonData
             {
-                PartitionKey = Settings.EnvironmentName,
+                PartitionKey = _options.EnvironmentName,
                 RowKey = $"{method}_{Uri.EscapeDataString(url)}",
                 Url = Uri.UnescapeDataString(url),
                 HttpMethod = method.ToString(),
@@ -66,7 +83,7 @@ namespace SFA.DAS.WireMockServiceApi
             await _table.ExecuteAsync(operation);
         }
 
-        private static async Task<IEnumerable<T>> GetEntitiesFromTable<T>()
+        private async Task<IEnumerable<T>> GetEntitiesFromTable<T>()
             where T : ITableEntity, new()
         {
             TableQuerySegment<T> querySegment = null;
@@ -82,14 +99,15 @@ namespace SFA.DAS.WireMockServiceApi
             return entities;
         }
 
-        public static async Task DropTableStorage()
+        public async Task DropTableStorage()
         {
             await _table.DeleteIfExistsAsync();
         }
 
-        public static async Task<IEnumerable<JsonData>> GetAll()
+        public async Task<IEnumerable<JsonData>> GetAll()
         {
             return await GetEntitiesFromTable<JsonData>();
         }
+
     }
 }

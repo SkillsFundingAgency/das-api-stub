@@ -4,19 +4,21 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.WireMockServiceApi.Controllers
+namespace SFA.DAS.WireMockServiceWeb.Controllers
 {
     [ApiController]
     [Route("api-stub")]
     public class SaveController : ControllerBase
     {
         private readonly ILogger<SaveController> _logger;
-        private readonly FakeApi _fakeApi;
+        private readonly IWireMockHttpService _service;
+        private readonly IDataRepository _repository;
 
-        public SaveController(ILogger<SaveController> logger, FakeApi fakeApi)
+        public SaveController(ILogger<SaveController> logger, IWireMockHttpService service, IDataRepository repository)
         {
             _logger = logger;
-            _fakeApi = fakeApi;
+            _service = service;
+            _repository = repository;
         }
 
         [HttpPost]
@@ -29,10 +31,10 @@ namespace SFA.DAS.WireMockServiceApi.Controllers
                 if (url == null) throw new ArgumentException(nameof(url));
                 if (jsonData == null) throw new ArgumentException(nameof(jsonData));
 
-                await DataRepository.InsertOrReplace(httpMethod, url, jsonData);
+                await _repository.InsertOrReplace(httpMethod, url, jsonData);
                 if (refresh)
                 {
-                    await _fakeApi.Refresh();
+                    await _service.Refresh();
                 }
             }
             catch (Exception e)
