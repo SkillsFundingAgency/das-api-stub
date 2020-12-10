@@ -45,7 +45,7 @@ namespace SFA.DAS.WireMockServiceApi
 
             public void DebugRequestResponse(LogEntryModel logEntryModel, bool isAdminrequest)
             {
-                string message = JsonConvert.SerializeObject(logEntryModel, Formatting.Indented);
+                var message = JsonConvert.SerializeObject(logEntryModel, Formatting.Indented);
                 _logger.LogDebug("Admin[{0}] {1}", isAdminrequest, message);
             }
 

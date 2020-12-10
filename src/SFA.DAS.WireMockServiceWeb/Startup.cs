@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using System;
+using System.IO;
 using System.Text.Json.Serialization;
 
 namespace SFA.DAS.WireMockServiceWeb
@@ -21,7 +23,14 @@ namespace SFA.DAS.WireMockServiceWeb
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<ApiStubOptions>(Configuration.GetSection(ApiStubOptions.ConfigSection));
+            var configBuilder = new ConfigurationBuilder()
+                .AddConfiguration(Configuration)
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddEnvironmentVariables();
+
+            var config = configBuilder.Build();
+
+            services.Configure<ApiStubOptions>(config.GetSection(ApiStubOptions.ConfigSection));
 
             services
                 .AddControllers()
@@ -35,9 +44,12 @@ namespace SFA.DAS.WireMockServiceWeb
             ConfigureWireMockService(services);
 
             services.AddSingleton<IDataRepository, DataRepository>();
+
+            services.AddApplicationInsightsTelemetry(config["APPINSIGHTS_INSTRUMENTATIONKEY"]);
+            services.AddLogging(logging => logging.AddConsole().AddDebug());
         }
 
-        private void ConfigureWireMockService(IServiceCollection services)
+        private static void ConfigureWireMockService(IServiceCollection services)
         {
             services.AddSingleton<IWireMockHttpService>(provider =>
             {

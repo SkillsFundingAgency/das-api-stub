@@ -18,7 +18,7 @@ namespace SFA.DAS.WireMockServiceApi
         {
             Console.WriteLine("STARTING WIREMOCK");
             _service.Start();
-            Console.WriteLine($"STARTED WIREMOCK");
+            Console.WriteLine("STARTED WIREMOCK");
             foreach (var serverUrl in _service.Server.Urls)
             {
                 Console.WriteLine($"STARTED WIREMOCK ON: {serverUrl}");
