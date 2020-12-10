@@ -18,13 +18,6 @@ jobs:
 
   - template: azure-pipelines-templates/build/step/app-build.yml@das-platform-building-blocks
 
-  # - task: DotNetCoreCLI@2
-  #   displayName: Integration Tests
-  #   inputs:
-  #     command: test
-  #     projects: '**/*.IntegrationTests.csproj'
-  #     arguments: --configuration $(buildConfiguration) --no-build
-
   - template: azure-pipelines-templates/build/step/dependency-check.yml@das-platform-building-blocks
 
   - task: DotNetCoreCLI@2
