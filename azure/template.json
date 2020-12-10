@@ -344,15 +344,15 @@
                                     "value": "[reference('ui-app-insights').outputs.InstrumentationKey.value]"
                                 },
                                 {
-                                    "name": "StorageAccountConnectionString",
+                                    "name": "ApiStubSettings:StorageAccountConnectionString",
                                     "value": "[parameters('sharedStorageAccountConnectionString')]"
                                 },                                
                                 {
-                                    "name": "WireMockServiceApiBaseUrl",
+                                    "name": "ApiStubSettings:WireMockServiceApiBaseUrl",
                                     "value": "[parameters('wireMockServiceApiBaseUrl')]"
                                 },
                                 {
-                                    "name": "EnvironmentName",
+                                    "name": "ApiStubSettings:EnvironmentName",
                                     "value": "[parameters('environmentName')]"
                                 },
                                 {
