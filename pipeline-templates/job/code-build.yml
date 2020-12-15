@@ -21,7 +21,7 @@ jobs:
   - template: azure-pipelines-templates/build/step/dependency-check.yml@das-platform-building-blocks
 
   - task: DotNetCoreCLI@2
-    displayName: Publish WireMock Service Api
+    displayName: Publish Stub Api
     inputs:
       command: publish
       publishWebProjects: false
@@ -29,7 +29,7 @@ jobs:
       arguments: --configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/publish --no-restore --no-build
 
   - task: DotNetCoreCLI@2
-    displayName: Publish WireMock Service Web
+    displayName: Publish Stub Web
     inputs:
       command: publish
       publishWebProjects: false
@@ -48,4 +48,4 @@ jobs:
     displayName: Publish Artifact
     inputs:
       targetPath: $(build.artifactstagingdirectory)/publish
-      artifactName: WireMockServiceApiArtifacts
+      artifactName: ApiStubArtifacts
