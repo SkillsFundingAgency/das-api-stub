@@ -47,6 +47,8 @@ namespace SFA.DAS.WireMockServiceWeb
 
             services.AddApplicationInsightsTelemetry(config["APPINSIGHTS_INSTRUMENTATIONKEY"]);
             services.AddLogging(logging => logging.AddConsole().AddDebug());
+
+            services.AddHealthChecks();
         }
 
         private static void ConfigureWireMockService(IServiceCollection services)
@@ -75,6 +77,7 @@ namespace SFA.DAS.WireMockServiceWeb
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHealthChecks("/health");
                 endpoints.MapControllers();
             });
 
