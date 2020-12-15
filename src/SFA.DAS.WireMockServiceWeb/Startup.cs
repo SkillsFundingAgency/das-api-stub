@@ -77,7 +77,7 @@ namespace SFA.DAS.WireMockServiceWeb
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHealthChecks("/health");
+                endpoints.MapHealthChecks("/ping");
                 endpoints.MapControllers();
             });
 
