@@ -48,25 +48,25 @@ stages:
       SubscriptionId: $(SubscriptionId)
       Location: $(ResourceGroupLocation)
       Environment: DEV
-      TemplatePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/azure/template.json
-      ParametersPath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/azure/template.parameters.json
+      TemplatePath: $(Pipeline.Workspace)/ApiStubArtifacts/azure/template.json
+      ParametersPath: $(Pipeline.Workspace)/ApiStubArtifacts/azure/template.parameters.json
       TemplateSecrets:
         LoggingRedisConnectionString: $(LoggingRedisConnectionString)
         SharedStorageAccountConnectionString: $(SharedStorageAccountConnectionString)
 
   - template: pipeline-templates/job/api-deploy.yml
     parameters:
-      DeploymentName: Deploy_WireMockServiceAPI
+      DeploymentName: Deploy_StubAPI
       DeploymentApprovals: DEV
       ServiceConnection: SFA-DAS-DevTest-ARM
-      DeploymentPackagePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/SFA.DAS.WireMockServiceApi.zip
+      DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceApi.zip
 
   - template: pipeline-templates/job/web-deploy.yml
     parameters:
-      DeploymentName: Deploy_WireMockServiceUI
+      DeploymentName: Deploy_StubUI
       DeploymentApprovals: DEV
       ServiceConnection: SFA-DAS-DevTest-ARM
-      DeploymentPackagePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/SFA.DAS.WireMockServiceWeb.zip
+      DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
 
 - stage: Deploy_TEST2
   dependsOn: Build
@@ -83,22 +83,57 @@ stages:
       SubscriptionId: $(SubscriptionId)
       Location: $(ResourceGroupLocation)
       Environment: DEV
-      TemplatePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/azure/template.json
-      ParametersPath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/azure/template.parameters.json
+      TemplatePath: $(Pipeline.Workspace)/ApiStubArtifacts/azure/template.json
+      ParametersPath: $(Pipeline.Workspace)/ApiStubArtifacts/azure/template.parameters.json
       TemplateSecrets:
         LoggingRedisConnectionString: $(LoggingRedisConnectionString)
         SharedStorageAccountConnectionString: $(SharedStorageAccountConnectionString)
 
   - template: pipeline-templates/job/api-deploy.yml
     parameters:
-      DeploymentName: Deploy_WireMockServiceAPI
+      DeploymentName: Deploy_StubAPI
       DeploymentApprovals: DEV
       ServiceConnection: SFA-DAS-DevTest-ARM
-      DeploymentPackagePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/SFA.DAS.WireMockServiceApi.zip
+      DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceApi.zip
 
   - template: pipeline-templates/job/web-deploy.yml
     parameters:
-      DeploymentName: Deploy_WireMockServiceUI
+      DeploymentName: Deploy_StubUI
       DeploymentApprovals: DEV
       ServiceConnection: SFA-DAS-DevTest-ARM
-      DeploymentPackagePath: $(Pipeline.Workspace)/WireMockServiceApiArtifacts/SFA.DAS.WireMockServiceWeb.zip
+      DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
+
+- stage: Deploy_PP
+  dependsOn: Build
+  displayName: Deploy to PP
+  pool:
+    name: DAS - Continuous Deployment
+  variables:
+  - group: PreProd Management Resources
+  - group: PreProd Shared Resources
+  jobs:
+  - template: pipeline-templates/job/arm-deploy.yml
+    parameters:
+      ServiceConnection: SFA-DIG-PreProd (ARM)
+      SubscriptionId: $(SubscriptionId)
+      Location: $(ResourceGroupLocation)
+      Environment: DEV
+      TemplatePath: $(Pipeline.Workspace)/ApiStubArtifacts/azure/template.json
+      ParametersPath: $(Pipeline.Workspace)/ApiStubArtifacts/azure/template.parameters.json
+      TemplateSecrets:
+        LoggingRedisConnectionString: $(LoggingRedisConnectionString)
+        SharedStorageAccountConnectionString: $(SharedStorageAccountConnectionString)
+
+  - template: pipeline-templates/job/api-deploy.yml
+    parameters:
+      DeploymentName: Deploy_StubAPI
+      DeploymentApprovals: DEV
+      ServiceConnection: SFA-DIG-PreProd (ARM)
+      DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceApi.zip
+
+  - template: pipeline-templates/job/web-deploy.yml
+    parameters:
+      DeploymentName: Deploy_StubUI
+      DeploymentApprovals: DEV
+      ServiceConnection: SFA-DIG-PreProd (ARM)
+      DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
