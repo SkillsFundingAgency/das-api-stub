@@ -12,11 +12,12 @@ namespace SFA.DAS.WireMockServiceWeb
 {
     public interface IDataRepository
     {
-        Task<string> GetData(HttpMethod method, string url);
+        string GetData(HttpMethod method, string url);
         Task InsertOrReplace(HttpMethod method, string url, object data);
         Task DropTableStorage();
         Task CreateTableStorage();
-        Task<IEnumerable<DataRepository.JsonData>> GetAll();
+        IEnumerable<DataRepository.JsonData> GetAll();
+        Task Delete(HttpMethod method, string url);
     }
 
     public class DataRepository : IDataRepository
@@ -33,6 +34,11 @@ namespace SFA.DAS.WireMockServiceWeb
         public async Task CreateTableStorage()
         {
             await CreateTableAsync(_options.StorageTableName);
+        }
+
+        public IEnumerable<JsonData> GetAll()
+        {
+            return _table.ExecuteQuery(new TableQuery<JsonData>());
         }
 
         private async Task CreateTableAsync(string tableName)
@@ -60,10 +66,9 @@ namespace SFA.DAS.WireMockServiceWeb
 
         }
 
-        public async Task<string> GetData(HttpMethod method, string url)
+        public string GetData(HttpMethod method, string url)
         {
-            var alldata = await GetEntitiesFromTable<JsonData>();
-            var item = alldata.SingleOrDefault(x =>
+            var item = _table.ExecuteQuery(new TableQuery<JsonData>()).SingleOrDefault(x =>
                 x.Url == Uri.UnescapeDataString(url) && x.HttpMethod.Equals(method.ToString(), StringComparison.InvariantCultureIgnoreCase));
             return item?.Data;
         }
@@ -83,30 +88,17 @@ namespace SFA.DAS.WireMockServiceWeb
             await _table.ExecuteAsync(operation);
         }
 
-        private async Task<IEnumerable<T>> GetEntitiesFromTable<T>()
-            where T : ITableEntity, new()
-        {
-            TableQuerySegment<T> querySegment = null;
-            var entities = new List<T>();
-            var query = new TableQuery<T>();
-
-            do
-            {
-                querySegment = await _table.ExecuteQuerySegmentedAsync(query, querySegment?.ContinuationToken);
-                entities.AddRange(querySegment.Results);
-            } while (querySegment.ContinuationToken != null);
-
-            return entities;
-        }
 
         public async Task DropTableStorage()
         {
             await _table.DeleteIfExistsAsync();
         }
 
-        public async Task<IEnumerable<JsonData>> GetAll()
+        public async Task Delete(HttpMethod method, string url)
         {
-            return await GetEntitiesFromTable<JsonData>();
+            var record = _table.ExecuteQuery(new TableQuery<JsonData>()).Single(x => string.Equals(x.Url, url));
+            var operation = TableOperation.Delete(record);
+            await _table.ExecuteAsync(operation);
         }
 
     }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.WireMockServiceWeb.Controllers
@@ -23,15 +22,7 @@ namespace SFA.DAS.WireMockServiceWeb.Controllers
         public async Task<IActionResult> Refresh()
         {
             _logger.LogInformation("[api-stub/refresh] called");
-            try
-            {
-                await _service.Refresh();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError("[api-stub/refresh]" + e);
-                throw;
-            }
+            await _service.Refresh();
             return Ok();
         }
     }

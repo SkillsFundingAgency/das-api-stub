@@ -46,7 +46,7 @@ namespace SFA.DAS.WireMockServiceWeb
         public async Task Refresh()
         {
             await ResetMappings();
-            var routes = await _repository.GetAll();
+            var routes = _repository.GetAll();
 
             foreach (var route in routes)
             {
