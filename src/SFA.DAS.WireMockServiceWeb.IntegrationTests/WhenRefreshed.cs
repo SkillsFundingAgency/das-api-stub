@@ -111,13 +111,28 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
         }
 
         [Test]
-        public async Task api_stub_mappings_get_returns_wiremock_mappings()
+        public async Task api_stub_wiremock_get_returns_wiremock_mappings()
         {
             // Arrange
             await AddSampleMapping();
 
             // Act
-            var response = await _webApiClient.GetAsync("api-stub/mappings");
+            var response = await _webApiClient.GetAsync("api-stub/wiremock");
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadAsStringAsync();
+            result.Should().Contain("Hello world!");
+        }
+
+        [Test]
+        public async Task api_stub_database_get_returns_mappings_data_from_database()
+        {
+            // Arrange
+            await _dataRepository.InsertOrReplace(HttpMethod.Custom, "wwww", "Hello world!");
+
+            // Act
+            var response = await _webApiClient.GetAsync("api-stub/database");
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -139,7 +154,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
 
             // Assert
 
-            await api_stub_mappings_get_returns_wiremock_mappings();
+            await api_stub_wiremock_get_returns_wiremock_mappings();
 
             var response = await _wireMockApiClient.GetFromJsonAsync<TestObject>(url);
             response.Should().BeEquivalentTo(expected);
