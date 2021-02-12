@@ -114,7 +114,7 @@ stages:
   jobs:
   - template: pipeline-templates/job/arm-deploy.yml
     parameters:
-      ServiceConnection: SFA-DIG-PreProd (ARM)
+      ServiceConnection: SFA-DIG-PreProd-ARM
       SubscriptionId: $(SubscriptionId)
       Location: $(ResourceGroupLocation)
       Environment: DEV
@@ -128,12 +128,12 @@ stages:
     parameters:
       DeploymentName: Deploy_StubAPI
       DeploymentApprovals: DEV
-      ServiceConnection: SFA-DIG-PreProd (ARM)
+      ServiceConnection: SFA-DIG-PreProd-ARM
       DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceApi.zip
 
   - template: pipeline-templates/job/web-deploy.yml
     parameters:
       DeploymentName: Deploy_StubUI
       DeploymentApprovals: DEV
-      ServiceConnection: SFA-DIG-PreProd (ARM)
+      ServiceConnection: SFA-DIG-PreProd-ARM
       DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
