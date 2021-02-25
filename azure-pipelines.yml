@@ -26,12 +26,33 @@ resources:
     type: github
     name: SkillsFundingAgency/das-platform-automation
     ref: refs/tags/4.2.4
-    endpoint: GitHub (SFA) 
+    endpoint: GitHub (SFA)
 
 stages:
 - stage: Build
   jobs:
   - template: pipeline-templates/job/code-build.yml
+
+- stage: Deploy_AT
+  dependsOn: Build
+  displayName: Deploy to AT
+  pool:
+    name: DAS - Continuous Deployment
+  variables:
+  - group: DevTest Management Resources
+  - group: AT DevTest Shared Resources
+  jobs:
+  - template: pipeline-templates/job/arm-deploy.yml
+    parameters:
+      ServiceConnection: SFA-DAS-DevTest-ARM
+      SubscriptionId: $(SubscriptionId)
+      Location: $(ResourceGroupLocation)
+      Environment: DEV
+      TemplatePath: $(Pipeline.Workspace)/ApiStubArtifacts/azure/template.json
+      ParametersPath: $(Pipeline.Workspace)/ApiStubArtifacts/azure/template.parameters.json
+      TemplateSecrets:
+        LoggingRedisConnectionString: $(LoggingRedisConnectionString)
+        SharedStorageAccountConnectionString: $(SharedStorageAccountConnectionString)
 
 - stage: Deploy_TEST
   dependsOn: Build
