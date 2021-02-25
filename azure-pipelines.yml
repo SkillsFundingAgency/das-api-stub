@@ -54,6 +54,20 @@ stages:
         LoggingRedisConnectionString: $(LoggingRedisConnectionString)
         SharedStorageAccountConnectionString: $(SharedStorageAccountConnectionString)
 
+  - template: pipeline-templates/job/api-deploy.yml
+    parameters:
+      DeploymentName: Deploy_StubAPI
+      DeploymentApprovals: DEV
+      ServiceConnection: SFA-DAS-DevTest-ARM
+      DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceApi.zip
+
+  - template: pipeline-templates/job/web-deploy.yml
+    parameters:
+      DeploymentName: Deploy_StubUI
+      DeploymentApprovals: DEV
+      ServiceConnection: SFA-DAS-DevTest-ARM
+      DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
+
 - stage: Deploy_TEST
   dependsOn: Build
   displayName: Deploy to TEST
