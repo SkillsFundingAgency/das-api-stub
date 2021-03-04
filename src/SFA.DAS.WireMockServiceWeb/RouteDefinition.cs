@@ -7,28 +7,29 @@ namespace SFA.DAS.WireMockServiceWeb
 {
     internal class RouteDefinition
     {
-        public RouteDefinition(DataRepository.JsonData route)
+        public RouteDefinition(DataRepository.MappingData route)
         {
             Data = route.Data;
             HttpMethod = route.HttpMethod;
             BaseUrl = route.Url.Split("?").First();
             SetQueryStringParameters(route);
+            HttpStatusCode = route.HttpStatusCode;
         }
 
-        private void SetQueryStringParameters(DataRepository.JsonData route)
+        private void SetQueryStringParameters(DataRepository.MappingData route)
         {
             if (route.Url.IndexOf("?", StringComparison.Ordinal) < 0) return;
             var query = HttpUtility.ParseQueryString(route.Url.Split("?").Last());
-            Parameters = new Dictionary<string, string>();
             foreach (var key in query.AllKeys.Where(k => k != null))
             {
                 Parameters.Add(key, query[key]);
             }
         }
 
-        public IDictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>();
-        public string HttpMethod { get; set; }
-        public string Data { get; set; }
-        public string BaseUrl { get; set; }
+        public IDictionary<string, string> Parameters { get; } = new Dictionary<string, string>();
+        public string HttpMethod { get; }
+        public string Data { get; }
+        public string BaseUrl { get; }
+        public int HttpStatusCode { get; }
     }
 }

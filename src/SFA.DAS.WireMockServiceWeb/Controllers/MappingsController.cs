@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.WireMockServiceWeb.Controllers
@@ -35,6 +36,15 @@ namespace SFA.DAS.WireMockServiceWeb.Controllers
             _logger.LogInformation("[api-stub/wiremock] called");
             var mappings = await _service.GetMappings();
             return Content(mappings);
+        }
+
+        [HttpGet]
+        [Route("find")]
+        public IActionResult FindMapping([FromQuery] string url)
+        {
+            _logger.LogInformation("[api-stub/find] called");
+            var mappings = _repository.Find(url).ToList();
+            return new JsonResult(mappings);
         }
     }
 }

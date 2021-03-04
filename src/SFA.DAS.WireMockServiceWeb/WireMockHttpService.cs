@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using WireMock.RequestBuilders;
@@ -85,7 +84,8 @@ namespace SFA.DAS.WireMockServiceWeb
                     Response.Create()
                         .WithHeader("Content-Type", "application/json")
                         .WithBody(route.Data)
-                        .WithStatusCode(HttpStatusCode.OK));
+                        .WithStatusCode(route.HttpStatusCode)
+                    );
         }
     }
 }
