@@ -64,9 +64,7 @@
             "defaultValue": ""
         },
         "appServiceAllowedIPs": {
-            "type": "array",
-            "defaultValue": [
-            ]
+            "type": "array"
         },
         "keyVaultCertificateName": {
             "type": "string"
