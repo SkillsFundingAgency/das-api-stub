@@ -68,7 +68,9 @@ stages:
       ServiceConnection: SFA-DAS-DevTest-ARM
       DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
 
-  - powershell: "curl -X GET \"https://$(UiCustomHostname)/api-stub/refresh\" -H  \"accept: */*\""
+  - job: PostDeploymentJob
+    steps:
+    - powershell: "curl -X GET \"https://$(UiCustomHostname)/api-stub/refresh\" -H  \"accept: */*\""
 
 - stage: Deploy_TEST
   dependsOn: Build
