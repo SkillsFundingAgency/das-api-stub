@@ -22,3 +22,4 @@ jobs:
             ServiceConnection: ${{ parameters.ServiceConnection }}
             AppServiceName: $(UiAppServiceName)
             DeploymentPackagePath: ${{ parameters.DeploymentPackagePath }}
+        - powershell: "curl -X GET \"https://{{Environment}}-stub.apprenticeships.education.gov.uk/api-stub/refresh\" -H  \"accept: */*\""
