@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.WireMockServiceWeb.Controllers
@@ -23,13 +24,12 @@ namespace SFA.DAS.WireMockServiceWeb.Controllers
 
         [HttpPost]
         [Route("save")]
-        public async Task<ActionResult> Save([FromQuery] HttpMethod httpMethod, [FromQuery] string url, [FromBody] object jsonData)
+        public async Task<ActionResult> Save([FromQuery] HttpMethod httpMethod, [FromQuery] string url, [FromBody] object jsonData, [FromQuery] HttpStatusCode httpStatusCode = HttpStatusCode.OK)
         {
-            _logger.LogInformation("[api-stub/save] called with parameters {httpMethod}, {url}, {jsonData}", httpMethod, url, jsonData);
+            _logger.LogInformation("[api-stub/save] called with parameters {httpMethod}, {url}, {jsonData}, {httpStatusCode}", httpMethod, url, jsonData, httpStatusCode);
             if (url == null) throw new ArgumentException(nameof(url));
-            if (jsonData == null) throw new ArgumentException(nameof(jsonData));
 
-            await _repository.InsertOrReplace(httpMethod, url, jsonData);
+            await _repository.InsertOrReplace(httpMethod, url, jsonData, httpStatusCode);
             await _service.Refresh();
 
             return Ok();

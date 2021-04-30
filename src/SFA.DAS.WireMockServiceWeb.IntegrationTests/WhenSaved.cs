@@ -7,8 +7,12 @@ using SFA.DAS.Testing.AzureStorageEmulator;
 using SFA.DAS.WireMockServiceApi;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
@@ -132,6 +136,49 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             var data = await _wireMockApiClient.GetFromJsonAsync<TestObject>(key);
 
             data.Should().BeEquivalentTo(expected);
+        }
+
+        [Test]
+        public async Task mapping_can_be_stored_without_body()
+        {
+            const HttpMethod mappingHttpMethod = HttpMethod.Post;
+            const string mappingUrl = "/businesscentral/payments/requests?api-version=2020-10-01";
+
+            HttpContent nullContent = new StringContent("{}", Encoding.UTF8, "application/json");
+            var response = await _webApiClient.PostAsync($"api-stub/save?httpMethod={mappingHttpMethod}&url={mappingUrl}", nullContent);
+            response.EnsureSuccessStatusCode();
+
+            var result = await _wireMockApiClient.PostAsync(mappingUrl, null);
+            result.StatusCode.Should().Be(200);
+        }
+
+        [Test]
+        public async Task mapping_can_be_stored_with_a_custom_return_http_status_code()
+        {
+            const HttpMethod mappingHttpMethod = HttpMethod.Post;
+            var mappingUrl = $"/{Guid.NewGuid()}";
+            const HttpStatusCode mappingHttpCode = HttpStatusCode.Accepted;
+
+            var response = await _webApiClient.PostAsJsonAsync($"api-stub/save?httpMethod={mappingHttpMethod}&url={mappingUrl}&httpStatusCode=202", "");
+            response.EnsureSuccessStatusCode();
+
+            var result = await _wireMockApiClient.PostAsync(mappingUrl, null);
+            result.StatusCode.Should().Be(mappingHttpCode);
+        }
+
+        [Test]
+        public async Task can_find_mappings_by_url()
+        {
+            var expected = new[] { "abc123", "---abc", "12abc21", "cnbc", "a-b-c" };
+            foreach (var url in expected)
+            {
+                var save = await _webApiClient.PostAsJsonAsync($"api-stub/save?httpMethod=Get&url={url}", "");
+                save.EnsureSuccessStatusCode();
+            }
+
+            var actual = await _webApiClient.GetFromJsonAsync<DataRepository.MappingData[]>("api-stub/find?url=abc");
+            Debug.Assert(actual != null, nameof(actual) + " != null");
+            actual.Select(a => a.Url).Should().BeEquivalentTo(expected.Take(3));
         }
     }
 }

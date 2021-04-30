@@ -33,7 +33,7 @@ namespace SFA.DAS.WireMockServiceWeb
             services.Configure<ApiStubOptions>(config.GetSection(ApiStubOptions.ConfigSection));
 
             services
-                .AddControllers()
+                .AddControllers(options => options.AllowEmptyInputInBodyModelBinding = true)
                 .AddJsonOptions(options =>
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
             services.AddSwaggerGen(c =>

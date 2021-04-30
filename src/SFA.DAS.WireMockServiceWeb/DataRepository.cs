@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,11 +14,12 @@ namespace SFA.DAS.WireMockServiceWeb
     public interface IDataRepository
     {
         string GetData(HttpMethod method, string url);
-        Task InsertOrReplace(HttpMethod method, string url, object data);
+        Task InsertOrReplace(HttpMethod method, string url, object jsonData, HttpStatusCode httpStatusCode = HttpStatusCode.OK);
         Task DropTableStorage();
         Task CreateTableStorage();
-        IEnumerable<DataRepository.JsonData> GetAll();
+        IEnumerable<DataRepository.MappingData> GetAll();
         Task Delete(HttpMethod method, string url);
+        IEnumerable<DataRepository.MappingData> Find(string url);
     }
 
     public class DataRepository : IDataRepository
@@ -36,9 +38,9 @@ namespace SFA.DAS.WireMockServiceWeb
             await CreateTableAsync(_options.StorageTableName);
         }
 
-        public IEnumerable<JsonData> GetAll()
+        public IEnumerable<MappingData> GetAll()
         {
-            return _table.ExecuteQuery(new TableQuery<JsonData>());
+            return _table.ExecuteQuery(new TableQuery<MappingData>());
         }
 
         private async Task CreateTableAsync(string tableName)
@@ -58,30 +60,31 @@ namespace SFA.DAS.WireMockServiceWeb
             }
         }
 
-        public class JsonData : TableEntity
+        public class MappingData : TableEntity
         {
             public string HttpMethod { get; set; }
             public string Url { get; set; }
             public string Data { get; set; }
-
+            public int HttpStatusCode { get; set; }
         }
 
         public string GetData(HttpMethod method, string url)
         {
-            var item = _table.ExecuteQuery(new TableQuery<JsonData>()).SingleOrDefault(x =>
+            var item = _table.ExecuteQuery(new TableQuery<MappingData>()).SingleOrDefault(x =>
                 x.Url == Uri.UnescapeDataString(url) && x.HttpMethod.Equals(method.ToString(), StringComparison.InvariantCultureIgnoreCase));
             return item?.Data;
         }
 
-        public async Task InsertOrReplace(HttpMethod method, string url, object data)
+        public async Task InsertOrReplace(HttpMethod method, string url, object jsonData, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
         {
-            var record = new JsonData
+            var record = new MappingData
             {
                 PartitionKey = _options.EnvironmentName,
                 RowKey = $"{method}_{Uri.EscapeDataString(url)}",
                 Url = Uri.UnescapeDataString(url),
                 HttpMethod = method.ToString(),
-                Data = JsonSerializer.Serialize(data)
+                Data = JsonSerializer.Serialize(jsonData),
+                HttpStatusCode = (int)httpStatusCode
             };
 
             var operation = TableOperation.InsertOrReplace(record);
@@ -96,10 +99,19 @@ namespace SFA.DAS.WireMockServiceWeb
 
         public async Task Delete(HttpMethod method, string url)
         {
-            var record = _table.ExecuteQuery(new TableQuery<JsonData>()).Single(x => string.Equals(x.Url, url));
+            var record = _table.ExecuteQuery(new TableQuery<MappingData>()).Single(x =>
+                string.Equals(x.Url, url, StringComparison.InvariantCultureIgnoreCase)
+            && string.Equals(x.HttpMethod, method.ToString(), StringComparison.InvariantCultureIgnoreCase));
             var operation = TableOperation.Delete(record);
             await _table.ExecuteAsync(operation);
         }
 
+        public IEnumerable<MappingData> Find(string url)
+        {
+            var data = _table.ExecuteQuery(new TableQuery<MappingData>()).Where(x =>
+                 x.Url.Contains(Uri.UnescapeDataString(url), StringComparison.InvariantCultureIgnoreCase)).ToList();
+
+            return data;
+        }
     }
 }
