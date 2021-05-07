@@ -70,7 +70,7 @@ stages:
 
   - job: PostDeploymentJob
     steps:
-    - powershell: "curl -X GET \"https://$(UiCustomHostname)/api-stub/refresh\" -H  \"accept: */*\""
+    - powershell: "curl https://$(UiCustomHostname)/api-stub/refresh"
 
 - stage: Deploy_TEST
   dependsOn: Build
