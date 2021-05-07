@@ -69,6 +69,7 @@ stages:
       DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
 
   - job: PostDeploymentJob
+    dependsOn: Deploy_StubUI
     steps:
     - powershell: "curl https://$(UiCustomHostname)/api-stub/refresh -UseBasicParsing"
 
