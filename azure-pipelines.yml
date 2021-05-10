@@ -68,12 +68,7 @@ stages:
       ServiceConnection: SFA-DAS-DevTest-ARM
       DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
 
-  - job: PostDeploymentJob
-    dependsOn:
-    - Deploy_StubAPI
-    - Deploy_StubUI
-    steps:
-    - powershell: "curl https://$(UiCustomHostname)/api-stub/refresh -UseBasicParsing"
+  - template: pipeline-templates/job/post-deploy.yml
 
 - stage: Deploy_TEST
   dependsOn: Build
@@ -110,12 +105,7 @@ stages:
       ServiceConnection: SFA-DAS-DevTest-ARM
       DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
 
-  - job: PostDeploymentJob
-    dependsOn:
-    - Deploy_StubAPI
-    - Deploy_StubUI
-    steps:
-    - powershell: "curl https://$(UiCustomHostname)/api-stub/refresh -UseBasicParsing"
+  - template: pipeline-templates/job/post-deploy.yml
     
 - stage: Deploy_TEST2
   dependsOn: Build
@@ -152,12 +142,7 @@ stages:
       ServiceConnection: SFA-DAS-DevTest-ARM
       DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
 
-  - job: PostDeploymentJob
-    dependsOn:
-    - Deploy_StubAPI
-    - Deploy_StubUI
-    steps:
-    - powershell: "curl https://$(UiCustomHostname)/api-stub/refresh -UseBasicParsing"
+  - template: pipeline-templates/job/post-deploy.yml
 
 - stage: Deploy_PP
   dependsOn: Build
@@ -194,9 +179,4 @@ stages:
       ServiceConnection: SFA-DIG-PreProd-ARM
       DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
 
-  - job: PostDeploymentJob
-    dependsOn:
-    - Deploy_StubAPI
-    - Deploy_StubUI
-    steps:
-    - powershell: "curl https://$(UiCustomHostname)/api-stub/refresh -UseBasicParsing"
+  - template: pipeline-templates/job/post-deploy.yml
