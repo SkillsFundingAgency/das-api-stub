@@ -1,0 +1,7 @@
+jobs:
+- job: PostDeploymentJob
+  dependsOn:
+  - Deploy_StubAPI
+  - Deploy_StubUI
+  steps:
+   - powershell: "curl https://$(UiCustomHostname)/api-stub/refresh -UseBasicParsing"

@@ -68,6 +68,8 @@ stages:
       ServiceConnection: SFA-DAS-DevTest-ARM
       DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
 
+  - template: pipeline-templates/job/post-deploy.yml
+
 - stage: Deploy_TEST
   dependsOn: Build
   displayName: Deploy to TEST
@@ -103,6 +105,8 @@ stages:
       ServiceConnection: SFA-DAS-DevTest-ARM
       DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
 
+  - template: pipeline-templates/job/post-deploy.yml
+    
 - stage: Deploy_TEST2
   dependsOn: Build
   displayName: Deploy to TEST2
@@ -138,6 +142,8 @@ stages:
       ServiceConnection: SFA-DAS-DevTest-ARM
       DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
 
+  - template: pipeline-templates/job/post-deploy.yml
+
 - stage: Deploy_PP
   dependsOn: Build
   displayName: Deploy to PP
@@ -172,3 +178,5 @@ stages:
       DeploymentApprovals: DEV
       ServiceConnection: SFA-DIG-PreProd-ARM
       DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
+
+  - template: pipeline-templates/job/post-deploy.yml
