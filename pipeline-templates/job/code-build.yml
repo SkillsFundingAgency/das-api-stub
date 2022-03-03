@@ -3,6 +3,7 @@ jobs:
   pool:
     name: DAS - Continuous Integration
   variables:
+  - group: "ESFA - SonarCloud"
   - group: Prod Management Resources
   - name: buildConfiguration
     value: release
