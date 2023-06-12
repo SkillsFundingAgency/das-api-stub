@@ -54,17 +54,7 @@ namespace SFA.DAS.WireMockServiceApi
                 _telemetryClient.TrackEvent(string.Format(formatString, args));
             }
         }
-
-        public void DebugRequestResponse(LogEntryModel logEntryModel, bool isAdminrequest)
-        {
-            using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
-            {
-                var message = JsonConvert.SerializeObject(logEntryModel, Formatting.Indented);
-                _logger.LogDebug("Admin[{0}] {1}", isAdminrequest, message);
-                _telemetryClient.TrackEvent(message);
-            }
-        }
-
+        
         public void Error(string formatString, Exception exception)
         {
             using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
@@ -73,5 +63,16 @@ namespace SFA.DAS.WireMockServiceApi
                 _telemetryClient.TrackEvent(string.Format(formatString, exception.Message));
             }
         }
+
+        public void DebugRequestResponse(LogEntryModel logEntryModel, bool isAdminRequest)
+        {
+            using (_telemetryClient.StartOperation<RequestTelemetry>("operation"))
+            {
+                var message = JsonConvert.SerializeObject(logEntryModel, Formatting.Indented);
+                _logger.LogDebug("Admin[{0}] {1}", isAdminRequest, message);
+                _telemetryClient.TrackEvent(message);
+            }
+        }
+
     }
 }
