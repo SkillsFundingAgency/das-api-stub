@@ -116,7 +116,7 @@ Start `AzureStorageEmulator.exe` and run solution with 2 startup projects: `SFA.
 }
 ```
 ### Running tests
-All tests are intergration tests and require a local instance of Azure Storage Emulator. Tests can be run using dotnet-cli from the `das-api-stub\src` directory using command: `dotnet test -v=normal`
+All tests are intergration tests and require a local instance of Azure Storage Emulator or Azurite (run as Administrator). Tests can be run using dotnet-cli from the `das-api-stub\src` directory using command: `dotnet test -v=normal`
 
 ### WebAPI operations
 The following operations are available in the front-end layer for managing API stub mappings:
