@@ -12,12 +12,12 @@ namespace SFA.DAS.WireMockServiceApi
         private readonly ILogger _logger;
         private readonly WireMockServerSettings _settings;
 
-        public WireMockService(ILogger<WireMockService> logger, IOptions<WireMockServerSettings> settings, TelemetryClient telemetryClient)
+        public WireMockService(ILogger<WireMockService> logger, IOptions<WireMockServerSettings> settings)
         {
             _logger = logger;
             _settings = settings.Value;
 
-            _settings.Logger = new Logger(logger, telemetryClient);
+            _settings.Logger = new Logger(logger);
         }
         
         public void Start()
