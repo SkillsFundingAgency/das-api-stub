@@ -53,7 +53,11 @@ namespace SFA.DAS.WireMockServiceApi
         {
             var message = JsonConvert.SerializeObject(logEntryModel, Formatting.Indented);
             _logger.LogDebug("Admin[{0}] {1}", isAdminRequest, message);
-            _telemetryClient.TrackEvent(message);
+            dynamic payLoad = JsonConvert.DeserializeObject(logEntryModel.Response.Body);
+            using (_telemetryClient.StartOperation<RequestTelemetry>(payLoad.Pattern as string))
+            {
+                _telemetryClient.TrackEvent(payLoad.Response as string);
+            }
         }
 
     }
