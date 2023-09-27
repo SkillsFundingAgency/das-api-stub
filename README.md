@@ -97,7 +97,7 @@ DAS API Stub is a<a href="https://github.com/WireMock-Net/WireMock.Net" target="
 * JSON
 
 ## Local running
-Start `AzureStorageEmulator.exe` and run solution with 2 startup projects: `SFA.DAS.WireMockServiceApi` & `SFA.DAS.WireMockServiceWeb`
+Start `AzureStorageEmulator.exe` or `Azurite` (as Administrator) and run solution with 2 startup projects: `SFA.DAS.WireMockServiceApi` & `SFA.DAS.WireMockServiceWeb`
 
 ### Required configuration
 #### SFA.DAS.WireMockServiceWeb
