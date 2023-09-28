@@ -51,9 +51,6 @@ namespace SFA.DAS.WireMockServiceApi
 
         public void DebugRequestResponse(LogEntryModel logEntryModel, bool isAdminRequest)
         {
-            if (isAdminRequest)
-                return;
-
             if (logEntryModel == null || logEntryModel.Request == null || logEntryModel.Response == null)
             {
                 return;
