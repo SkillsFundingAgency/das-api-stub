@@ -51,14 +51,18 @@ namespace SFA.DAS.WireMockServiceApi
 
         public void DebugRequestResponse(LogEntryModel logEntryModel, bool isAdminRequest)
         {
-            var message = JsonConvert.SerializeObject(logEntryModel, Formatting.Indented);
-            _logger.LogDebug("Admin[{0}] {1}", isAdminRequest, message);
-            dynamic payLoad = JsonConvert.DeserializeObject(logEntryModel.Response.Body);
-            using (_telemetryClient.StartOperation<RequestTelemetry>(payLoad.Pattern as string))
+            if (isAdminRequest)
+                return;
+
+            if (logEntryModel == null || logEntryModel.Request == null || logEntryModel.Response == null)
             {
-                _telemetryClient.TrackEvent(payLoad.Response as string);
+                return;
+            }
+
+            using (_telemetryClient.StartOperation<RequestTelemetry>(logEntryModel.Request.Path))
+            {
+                _telemetryClient.TrackEvent(JsonConvert.SerializeObject(logEntryModel.Response));
             }
         }
-
     }
 }
