@@ -5,6 +5,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using WireMock.Admin.Requests;
 using WireMock.Logging;
+using System.Collections.Generic;
 
 namespace SFA.DAS.WireMockServiceApi
 {
@@ -58,7 +59,11 @@ namespace SFA.DAS.WireMockServiceApi
 
             using (_telemetryClient.StartOperation<RequestTelemetry>(logEntryModel.Request.Path))
             {
-                _telemetryClient.TrackEvent(JsonConvert.SerializeObject(logEntryModel.Response));
+                var eventData = new Dictionary<string, string>
+                {
+                    { "Response", JsonConvert.SerializeObject(logEntryModel.Response) }
+                };
+                _telemetryClient.TrackEvent(logEntryModel.Request.Path, eventData);
             }
         }
     }
