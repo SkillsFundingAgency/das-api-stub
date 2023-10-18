@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.ApplicationInsights.DependencyCollector;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -25,6 +27,10 @@ namespace SFA.DAS.WireMockServiceApi
             services.Configure<WireMockServerSettings>(configuration.GetSection("WireMockServerSettings"));
 
             services.AddHostedService<App>();
+            services.AddApplicationInsightsTelemetryWorkerService();
+
+            var dependencyModule = new DependencyTrackingTelemetryModule();
+            dependencyModule.Initialize(TelemetryConfiguration.Active);
         }
     }
 }
