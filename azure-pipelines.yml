@@ -162,22 +162,7 @@ stages:
       TemplateSecrets:
         LoggingRedisConnectionString: $(LoggingRedisConnectionString)
         SharedStorageAccountConnectionString: $(SharedStorageAccountConnectionString)
-
-- stage: Deploy_MO
-  dependsOn: Build
-  displayName: Deploy to MO
-  pool:
-    name: DAS - Continuous Deployment Agents
-  variables:
-  - group: MO Management Resources
-  - group: MO Shared Resources
-  jobs:
-  - template: pipeline-templates/job/deploy.yml
-    parameters:
-     Environment: MO
-     SolutionBaseName: $(SolutionBaseName)
-     ServiceConnection: SFA-ASM-ModelOffice-ARM
-
+        
   - template: pipeline-templates/job/api-deploy.yml
     parameters:
       DeploymentName: Deploy_StubAPI
