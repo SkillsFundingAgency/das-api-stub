@@ -162,7 +162,7 @@ stages:
       TemplateSecrets:
         LoggingRedisConnectionString: $(LoggingRedisConnectionString)
         SharedStorageAccountConnectionString: $(SharedStorageAccountConnectionString)
-        
+
   - template: pipeline-templates/job/api-deploy.yml
     parameters:
       DeploymentName: Deploy_StubAPI
@@ -175,6 +175,43 @@ stages:
       DeploymentName: Deploy_StubUI
       DeploymentApprovals: DEV
       ServiceConnection: SFA-DIG-PreProd-ARM
+      DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
+
+  - template: pipeline-templates/job/post-deploy.yml
+
+- stage: Deploy_MO
+  dependsOn: Build
+  displayName: Deploy to MO
+  pool:
+    name: DAS - Continuous Deployment Agents
+  variables:
+  - group: MO Management Resources
+  - group: MO Shared Resources
+  jobs:
+  - template: pipeline-templates/job/arm-deploy.yml
+    parameters:
+      ServiceConnection: SFA-ASM-ModelOffice-ARM
+      SubscriptionId: $(SubscriptionId)
+      Location: $(ResourceGroupLocation)
+      Environment: DEV
+      TemplatePath: $(Pipeline.Workspace)/ApiStubArtifacts/azure/template.json
+      ParametersPath: $(Pipeline.Workspace)/ApiStubArtifacts/azure/template.parameters.json
+      TemplateSecrets:
+        LoggingRedisConnectionString: $(LoggingRedisConnectionString)
+        SharedStorageAccountConnectionString: $(SharedStorageAccountConnectionString)
+        
+  - template: pipeline-templates/job/api-deploy.yml
+    parameters:
+      DeploymentName: Deploy_StubAPI
+      DeploymentApprovals: DEV
+      ServiceConnection: SFA-ASM-ModelOffice-ARM
+      DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceApi.zip
+
+  - template: pipeline-templates/job/web-deploy.yml
+    parameters:
+      DeploymentName: Deploy_StubUI
+      DeploymentApprovals: DEV
+      ServiceConnection: SFA-ASM-ModelOffice-ARM
       DeploymentPackagePath: $(Pipeline.Workspace)/ApiStubArtifacts/SFA.DAS.WireMockServiceWeb.zip
 
   - template: pipeline-templates/job/post-deploy.yml
