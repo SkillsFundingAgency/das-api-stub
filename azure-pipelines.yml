@@ -177,7 +177,6 @@ stages:
      Environment: MO
      SolutionBaseName: $(SolutionBaseName)
      ServiceConnection: SFA-ASM-ModelOffice-ARM
-     OverrideBlockOnPossibleDataLoss: ${{ parameters.OverrideBlockOnPossibleDataLoss  }}
 
   - template: pipeline-templates/job/api-deploy.yml
     parameters:
