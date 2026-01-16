@@ -93,6 +93,10 @@
             "metadata": {
                 "description": "Determines whether to enable route table association on subnet"
             }
+        },
+        "utcValue": {
+            "type": "string",
+            "defaultValue": "[utcNow()]"
         }
     },
     "variables": {
@@ -215,7 +219,7 @@
                         "value": "[variables('apiAppServiceName')]"
                     },
                     "scopedResourceId": {
-                        "value": "[reference(api-app-insights).outputs.AppInsightsResourceId.value]"
+                        "value": "[reference('api-app-insights').outputs.AppInsightsResourceId.value]"
                     }
                 }
             }
@@ -351,7 +355,7 @@
                         "value": "[variables('uiAppServiceName')]"
                     },
                     "scopedResourceId": {
-                        "value": "[reference(ui-app-insights).outputs.AppInsightsResourceId.value]"
+                        "value": "[reference('ui-app-insights').outputs.AppInsightsResourceId.value]"
                     }
                 }
             }
