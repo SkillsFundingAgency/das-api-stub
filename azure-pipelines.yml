@@ -153,6 +153,7 @@ stages:
   variables:
   - group: PreProd Management Resources
   - group: PreProd Shared Resources
+  - group: PREPROD das-api-stub
   jobs:
   - template: pipeline-templates/job/arm-deploy.yml
     parameters:
