@@ -29,6 +29,9 @@
         "sharedFrontEndAppServicePlanName": {
             "type": "string"
         },
+        "sharedBackEndAppServicePlanName": {
+            "type": "string"
+        },
         "sharedEnvResourceGroup": {
             "type": "string"
         },
@@ -53,6 +56,9 @@
             "defaultValue": "1"
         },
         "sharedFrontEndSubnetResourceId": {
+            "type": "string"
+        },
+        "sharedBackEndSubnetResourceId": {
             "type": "string"
         },
         "loggingRedisKey": {
@@ -267,14 +273,14 @@
                     "appServiceName": {
                         "value": "[variables('apiAppServiceName')]"
                     },
-                    "appServicePlanName": {
-                        "value": "[variables('appServicePlanName')]"
+                   "appServicePlanName": {
+                        "value": "[parameters('sharedBackEndAppServicePlanName')]"
                     },
                     "appServicePlanResourceGroup": {
-                        "value": "[variables('resourceGroupName')]"
+                        "value": "[parameters('sharedEnvResourceGroup')]"
                     },
                     "subnetResourceId": {
-                        "value": "[reference('api-app-subnet').outputs.SubnetResourceId.value]"
+                        "value": "[parameters('sharedBackEndSubnetResourceId')]"
                     },
                     "deployStagingSlot": {
                         "value": true

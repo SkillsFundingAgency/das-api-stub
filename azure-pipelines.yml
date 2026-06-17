@@ -7,6 +7,7 @@ trigger:
 variables:
 - group: Release Management Resources
 - group: Wildcard Cert Variables v2
+- group: RELEASE das-api-stub
 
 pool:
   name: DAS - Continuous Integration
