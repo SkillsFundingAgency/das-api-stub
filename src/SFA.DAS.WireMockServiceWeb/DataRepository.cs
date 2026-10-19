@@ -14,11 +14,11 @@ namespace SFA.DAS.WireMockServiceWeb
     public interface IDataRepository
     {
         string GetData(HttpMethod method, string url);
-        Task InsertOrReplace(HttpMethod method, string url, object jsonData, HttpStatusCode httpStatusCode = HttpStatusCode.OK);
+        Task<DataRepository.MappingData> InsertOrReplace(HttpMethod method, string url, object jsonData, HttpStatusCode httpStatusCode = HttpStatusCode.OK);
         Task DropTableStorage();
         Task CreateTableStorage();
         IEnumerable<DataRepository.MappingData> GetAll();
-        Task Delete(HttpMethod method, string url);
+        Task<DataRepository.MappingData> Delete(HttpMethod method, string url);
         IEnumerable<DataRepository.MappingData> Find(string url);
     }
 
@@ -75,7 +75,7 @@ namespace SFA.DAS.WireMockServiceWeb
             return item?.Data;
         }
 
-        public async Task InsertOrReplace(HttpMethod method, string url, object jsonData, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
+        public async Task<MappingData> InsertOrReplace(HttpMethod method, string url, object jsonData, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
         {
             var record = new MappingData
             {
@@ -89,6 +89,7 @@ namespace SFA.DAS.WireMockServiceWeb
 
             var operation = TableOperation.InsertOrReplace(record);
             await _table.ExecuteAsync(operation);
+            return record;
         }
 
 
@@ -97,13 +98,14 @@ namespace SFA.DAS.WireMockServiceWeb
             await _table.DeleteIfExistsAsync();
         }
 
-        public async Task Delete(HttpMethod method, string url)
+        public async Task<MappingData> Delete(HttpMethod method, string url)
         {
             var record = _table.ExecuteQuery(new TableQuery<MappingData>()).Single(x =>
                 string.Equals(x.Url, url, StringComparison.InvariantCultureIgnoreCase)
             && string.Equals(x.HttpMethod, method.ToString(), StringComparison.InvariantCultureIgnoreCase));
             var operation = TableOperation.Delete(record);
             await _table.ExecuteAsync(operation);
+            return record;
         }
 
         public IEnumerable<MappingData> Find(string url)

@@ -28,8 +28,8 @@ namespace SFA.DAS.WireMockServiceWeb.Controllers
             _logger.LogInformation("[api-stub/save] called with parameters {httpMethod}, {url}", httpMethod, url);
             if (url == null) throw new ArgumentException(nameof(url));
 
-            await _repository.Delete(httpMethod, url);
-            await _service.Refresh();
+            var mapping = await _repository.Delete(httpMethod, url);
+            await _service.RemoveMapping(mapping);
 
             return Ok();
         }

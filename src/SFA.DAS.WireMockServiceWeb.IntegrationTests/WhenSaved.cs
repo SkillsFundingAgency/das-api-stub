@@ -167,6 +167,43 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
         }
 
         [Test]
+        public async Task saving_a_mapping_leaves_other_wiremock_mappings_in_place()
+        {
+            var untouchedPath = $"/{Guid.NewGuid()}";
+            await RegisterMappingDirectlyOnWireMock(untouchedPath);
+
+            var response = await _webApiClient.PostAsJsonAsync($"api-stub/save?httpMethod={HttpMethod.Get}&url=/{Guid.NewGuid()}", new TestObject { Key = 1, Value = "String value 1" });
+            response.EnsureSuccessStatusCode();
+
+            var result = await _wireMockApiClient.GetAsync(untouchedPath);
+            result.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        [Test]
+        public async Task saving_an_existing_mapping_replaces_what_wiremock_serves()
+        {
+            var key = $"/{Guid.NewGuid()}";
+            var url = $"api-stub/save?httpMethod={HttpMethod.Get}&url={key}";
+
+            var response = await _webApiClient.PostAsJsonAsync(url, new TestObject { Key = 123, Value = "String value 123" });
+            response.EnsureSuccessStatusCode();
+
+            var expected = new TestObject { Key = 789, Value = "String value 789" };
+            response = await _webApiClient.PostAsJsonAsync(url, expected);
+            response.EnsureSuccessStatusCode();
+
+            var data = await _wireMockApiClient.GetFromJsonAsync<TestObject>(key);
+            data.Should().BeEquivalentTo(expected);
+        }
+
+        private async Task RegisterMappingDirectlyOnWireMock(string path)
+        {
+            var mapping = new StringContent($"{{\"Request\":{{\"Path\":\"{path}\",\"Methods\":[\"GET\"]}},\"Response\":{{\"StatusCode\":200}}}}", Encoding.UTF8, "application/json");
+            var response = await _wireMockApiClient.PostAsync("/__admin/mappings", mapping);
+            response.EnsureSuccessStatusCode();
+        }
+
+        [Test]
         public async Task can_find_mappings_by_url()
         {
             var expected = new[] { "abc123", "---abc", "12abc21", "cnbc", "a-b-c" };
