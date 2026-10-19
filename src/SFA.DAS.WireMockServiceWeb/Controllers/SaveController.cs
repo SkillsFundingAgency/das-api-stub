@@ -29,8 +29,8 @@ namespace SFA.DAS.WireMockServiceWeb.Controllers
             _logger.LogInformation("[api-stub/save] called with parameters {httpMethod}, {url}, {jsonData}, {httpStatusCode}", httpMethod, url, jsonData, httpStatusCode);
             if (url == null) throw new ArgumentException(nameof(url));
 
-            await _repository.InsertOrReplace(httpMethod, url, jsonData, httpStatusCode);
-            await _service.Refresh();
+            var mapping = await _repository.InsertOrReplace(httpMethod, url, jsonData, httpStatusCode);
+            await _service.AddOrUpdateMapping(mapping);
 
             return Ok();
         }

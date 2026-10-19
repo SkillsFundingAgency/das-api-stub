@@ -12,6 +12,11 @@ namespace SFA.DAS.WireMockServiceWeb
             return await client.PostAsync(url, data.GetStringContent());
         }
 
+        public static async Task<HttpResponseMessage> PutAsJsonAsync<T>(this HttpClient client, string url, T data)
+        {
+            return await client.PutAsync(url, data.GetStringContent());
+        }
+
         public static async Task<HttpResponseMessage> PostNothingAsync(this HttpClient client, string url)
         {
             return await client.PostAsync(url, null);

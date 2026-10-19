@@ -7,7 +7,9 @@ using SFA.DAS.Testing.AzureStorageEmulator;
 using SFA.DAS.WireMockServiceApi;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
@@ -89,6 +91,41 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
 
             var data = _dataRepository.GetData(httpMethod, key);
             data.Should().BeNullOrEmpty();
+        }
+
+        [Test]
+        public async Task deleted_mapping_is_no_longer_served_by_wiremock()
+        {
+            const HttpMethod httpMethod = HttpMethod.Get;
+            var key = $"/{Guid.NewGuid()}";
+
+            var save = await _webApiClient.PostAsync($"api-stub/save?httpMethod={httpMethod}&url={key}", new StringContent("{}", Encoding.UTF8, "application/json"));
+            save.EnsureSuccessStatusCode();
+            (await _wireMockApiClient.GetAsync(key)).StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var response = await _webApiClient.DeleteAsync($"api-stub/delete?httpMethod={httpMethod}&url={key}");
+            response.EnsureSuccessStatusCode();
+
+            (await _wireMockApiClient.GetAsync(key)).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [Test]
+        public async Task deleting_a_mapping_leaves_other_wiremock_mappings_in_place()
+        {
+            const HttpMethod httpMethod = HttpMethod.Get;
+            var untouchedPath = $"/{Guid.NewGuid()}";
+            var key = $"/{Guid.NewGuid()}";
+
+            var save = await _webApiClient.PostAsync($"api-stub/save?httpMethod={httpMethod}&url={key}", new StringContent("{}", Encoding.UTF8, "application/json"));
+            save.EnsureSuccessStatusCode();
+
+            var mapping = new StringContent($"{{\"Request\":{{\"Path\":\"{untouchedPath}\",\"Methods\":[\"GET\"]}},\"Response\":{{\"StatusCode\":200}}}}", Encoding.UTF8, "application/json");
+            (await _wireMockApiClient.PostAsync("/__admin/mappings", mapping)).EnsureSuccessStatusCode();
+
+            var response = await _webApiClient.DeleteAsync($"api-stub/delete?httpMethod={httpMethod}&url={key}");
+            response.EnsureSuccessStatusCode();
+
+            (await _wireMockApiClient.GetAsync(untouchedPath)).StatusCode.Should().Be(HttpStatusCode.OK);
         }
     }
 }
