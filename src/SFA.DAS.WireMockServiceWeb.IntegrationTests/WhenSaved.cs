@@ -1,10 +1,10 @@
+using SFA.DAS.WireMockService.Data;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using SFA.DAS.Testing.AzureStorageEmulator;
-using SFA.DAS.WireMockServiceApi;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,64 +21,43 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
 {
     public class WhenSaved
     {
-        private const int Port = 8888;
+        private readonly string _tableName = $"Test{Guid.NewGuid():N}";
         private TestServer _testServer;
-        private HttpClient _wireMockApiClient;
+        private TestServer _stubAppServer;
         private HttpClient _webApiClient;
-        private TestServer _wireMockServer;
+        private HttpClient _stubAppClient;
         private IDataRepository _dataRepository;
 
         [OneTimeSetUp]
-        public void Setup()
+        public async Task Setup()
         {
             AzureStorageEmulatorManager.StartStorageEmulator();
-            BuildWireMockClient();
-            BuildWireMockHost();
-        }
-        private void BuildWireMockClient()
-        {
+
             var settings = new Dictionary<string, string>
             {
-                {"ApiStubSettings:WireMockServiceApiBaseUrl", $"http://localhost:{Port}"}
+                { "ApiStubSettings:StorageTableName", _tableName }
             };
 
-            var builder = new WebHostBuilder()
-                .ConfigureAppConfiguration((context, config) =>
-                {
-                    config.AddEnvironmentVariables();
-                    config.AddInMemoryCollection(settings);
-                })
-                .UseStartup<Startup>();
-
-            _testServer = new TestServer(builder);
+            _testServer = new TestServer(new WebHostBuilder()
+                .ConfigureAppConfiguration((context, config) => config.AddInMemoryCollection(settings))
+                .UseStartup<Startup>());
             _webApiClient = _testServer.CreateClient();
             _dataRepository = (IDataRepository)_testServer.Services.GetService(typeof(IDataRepository));
+            await _dataRepository.CreateTableStorage();
+
+            _stubAppServer = new TestServer(new WebHostBuilder()
+                .ConfigureAppConfiguration((context, config) => config.AddInMemoryCollection(settings))
+                .UseStartup<WireMockServiceApi.Startup>());
+            _stubAppClient = _stubAppServer.CreateClient();
         }
-
-        private void BuildWireMockHost()
-        {
-            IDictionary<string, string> settings = new Dictionary<string, string>();
-            settings.Add("WireMockServerSettings:Port", $"{Port}");
-            settings.Add("WireMockServerSettings:StartAdminInterface", "true");
-
-            var wireMockHostBuilder = new WebHostBuilder()
-                .ConfigureAppConfiguration((context, config) =>
-                {
-                    config.AddInMemoryCollection(settings);
-                })
-                .UseStartup<WireMockServerStartup>();
-            _wireMockServer = new TestServer(wireMockHostBuilder);
-            _wireMockApiClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{Port}") };
-        }
-
 
         [OneTimeTearDown]
         public async Task TearDown()
         {
-            _wireMockApiClient?.Dispose();
             _webApiClient?.Dispose();
+            _stubAppClient?.Dispose();
             _testServer?.Dispose();
-            _wireMockServer?.Dispose();
+            _stubAppServer?.Dispose();
             await _dataRepository.DropTableStorage();
         }
 
@@ -94,7 +73,7 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             var response = await _webApiClient.PostAsJsonAsync(url, expected);
             response.EnsureSuccessStatusCode();
 
-            var data = _dataRepository.GetData(httpMethod, key);
+            var data = (await _dataRepository.Get(httpMethod.ToString(), key))?.Data;
 
             data.Should().BeEquivalentTo(JsonSerializer.Serialize(expected));
         }
@@ -116,71 +95,27 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             response = await _webApiClient.PostAsJsonAsync(url, expected);
             response.EnsureSuccessStatusCode();
 
-            var data = _dataRepository.GetData(httpMethod, key);
+            var data = (await _dataRepository.Get(httpMethod.ToString(), key))?.Data;
 
             data.Should().BeEquivalentTo(JsonSerializer.Serialize(expected));
         }
 
         [Test]
-        public async Task saved_data_is_available_after_save_and_refresh()
+        public async Task saved_data_is_served_by_the_stub_app()
         {
             var expected = new TestObject { Key = 123, Value = "String value 123" };
-            const HttpMethod httpMethod = HttpMethod.Get;
-
             var key = $"/{Guid.NewGuid()}";
-            var url = $"api-stub/save?httpMethod={httpMethod}&url={key}";
 
-            var response = await _webApiClient.PostAsJsonAsync(url, expected);
+            var response = await _webApiClient.PostAsJsonAsync($"api-stub/save?httpMethod={HttpMethod.Get}&url={key}", expected);
             response.EnsureSuccessStatusCode();
 
-            var data = await _wireMockApiClient.GetFromJsonAsync<TestObject>(key);
+            var data = await _stubAppClient.GetFromJsonAsync<TestObject>(key);
 
             data.Should().BeEquivalentTo(expected);
         }
 
         [Test]
-        public async Task mapping_can_be_stored_without_body()
-        {
-            const HttpMethod mappingHttpMethod = HttpMethod.Post;
-            const string mappingUrl = "/businesscentral/payments/requests?api-version=2020-10-01";
-
-            HttpContent nullContent = new StringContent("{}", Encoding.UTF8, "application/json");
-            var response = await _webApiClient.PostAsync($"api-stub/save?httpMethod={mappingHttpMethod}&url={mappingUrl}", nullContent);
-            response.EnsureSuccessStatusCode();
-
-            var result = await _wireMockApiClient.PostAsync(mappingUrl, null);
-            result.StatusCode.Should().Be(200);
-        }
-
-        [Test]
-        public async Task mapping_can_be_stored_with_a_custom_return_http_status_code()
-        {
-            const HttpMethod mappingHttpMethod = HttpMethod.Post;
-            var mappingUrl = $"/{Guid.NewGuid()}";
-            const HttpStatusCode mappingHttpCode = HttpStatusCode.Accepted;
-
-            var response = await _webApiClient.PostAsJsonAsync($"api-stub/save?httpMethod={mappingHttpMethod}&url={mappingUrl}&httpStatusCode=202", "");
-            response.EnsureSuccessStatusCode();
-
-            var result = await _wireMockApiClient.PostAsync(mappingUrl, null);
-            result.StatusCode.Should().Be(mappingHttpCode);
-        }
-
-        [Test]
-        public async Task saving_a_mapping_leaves_other_wiremock_mappings_in_place()
-        {
-            var untouchedPath = $"/{Guid.NewGuid()}";
-            await RegisterMappingDirectlyOnWireMock(untouchedPath);
-
-            var response = await _webApiClient.PostAsJsonAsync($"api-stub/save?httpMethod={HttpMethod.Get}&url=/{Guid.NewGuid()}", new TestObject { Key = 1, Value = "String value 1" });
-            response.EnsureSuccessStatusCode();
-
-            var result = await _wireMockApiClient.GetAsync(untouchedPath);
-            result.StatusCode.Should().Be(HttpStatusCode.OK);
-        }
-
-        [Test]
-        public async Task saving_an_existing_mapping_replaces_what_wiremock_serves()
+        public async Task saving_an_existing_mapping_replaces_what_the_stub_app_serves()
         {
             var key = $"/{Guid.NewGuid()}";
             var url = $"api-stub/save?httpMethod={HttpMethod.Get}&url={key}";
@@ -192,15 +127,48 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
             response = await _webApiClient.PostAsJsonAsync(url, expected);
             response.EnsureSuccessStatusCode();
 
-            var data = await _wireMockApiClient.GetFromJsonAsync<TestObject>(key);
+            var data = await _stubAppClient.GetFromJsonAsync<TestObject>(key);
             data.Should().BeEquivalentTo(expected);
         }
 
-        private async Task RegisterMappingDirectlyOnWireMock(string path)
+        [Test]
+        public async Task mapping_can_be_stored_without_body()
         {
-            var mapping = new StringContent($"{{\"Request\":{{\"Path\":\"{path}\",\"Methods\":[\"GET\"]}},\"Response\":{{\"StatusCode\":200}}}}", Encoding.UTF8, "application/json");
-            var response = await _wireMockApiClient.PostAsync("/__admin/mappings", mapping);
+            const HttpMethod mappingHttpMethod = HttpMethod.Post;
+            var mappingUrl = $"/{Guid.NewGuid()}?api-version=2020-10-01";
+
+            HttpContent nullContent = new StringContent("{}", Encoding.UTF8, "application/json");
+            var response = await _webApiClient.PostAsync($"api-stub/save?httpMethod={mappingHttpMethod}&url={Uri.EscapeDataString(mappingUrl)}", nullContent);
             response.EnsureSuccessStatusCode();
+
+            var result = await _stubAppClient.PostAsync(mappingUrl, null);
+            result.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        [Test]
+        public async Task mapping_can_be_stored_with_a_custom_return_http_status_code()
+        {
+            const HttpMethod mappingHttpMethod = HttpMethod.Post;
+            var mappingUrl = $"/{Guid.NewGuid()}";
+
+            var response = await _webApiClient.PostAsJsonAsync($"api-stub/save?httpMethod={mappingHttpMethod}&url={mappingUrl}&httpStatusCode=202", "");
+            response.EnsureSuccessStatusCode();
+
+            var result = await _stubAppClient.PostAsync(mappingUrl, null);
+            result.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        }
+
+        [Test]
+        public async Task refresh_is_accepted_and_changes_nothing()
+        {
+            var expected = new TestObject { Key = 123, Value = "String value 123" };
+            var key = $"/{Guid.NewGuid()}";
+            (await _webApiClient.PostAsJsonAsync($"api-stub/save?httpMethod={HttpMethod.Get}&url={key}", expected)).EnsureSuccessStatusCode();
+
+            var response = await _webApiClient.GetAsync("api-stub/refresh");
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            (await _stubAppClient.GetFromJsonAsync<TestObject>(key)).Should().BeEquivalentTo(expected);
         }
 
         [Test]

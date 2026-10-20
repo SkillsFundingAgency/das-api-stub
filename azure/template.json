@@ -85,7 +85,11 @@
             "type": "string"
         },
         "wireMockServiceApiBaseUrl": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Unused: the admin app no longer pushes mappings to the stub app. Kept so deployments that still supply it do not fail; remove with the pipeline variable."
+            }
         },
         "EnableRouteTableAssociation": {
             "type": "bool",
@@ -297,16 +301,20 @@
                                     "value": "[parameters('environmentName')]"
                                 },
                                 {
+                                    "name": "ApiStubSettings:StorageAccountConnectionString",
+                                    "value": "[parameters('sharedStorageAccountConnectionString')]"
+                                },
+                                {
+                                    "name": "ApiStubSettings:EnvironmentName",
+                                    "value": "[parameters('environmentName')]"
+                                },
+                                {
                                     "name": "LoggingRedisConnectionString",
                                     "value": "[parameters('loggingRedisConnectionString')]"
                                 },
                                 {
                                     "name": "LoggingRedisKey",
                                     "value": "[parameters('loggingRedisKey')]"
-                                },
-                                {
-                                    "name": "StartAdminInterface",
-                                    "value": "true"
                                 }
                             ]
                         }
@@ -434,10 +442,6 @@
                                 {
                                     "name": "ApiStubSettings:StorageAccountConnectionString",
                                     "value": "[parameters('sharedStorageAccountConnectionString')]"
-                                },
-                                {
-                                    "name": "ApiStubSettings:WireMockServiceApiBaseUrl",
-                                    "value": "[parameters('wireMockServiceApiBaseUrl')]"
                                 },
                                 {
                                     "name": "ApiStubSettings:EnvironmentName",

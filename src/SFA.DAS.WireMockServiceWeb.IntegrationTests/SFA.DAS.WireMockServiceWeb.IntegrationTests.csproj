@@ -31,6 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SFA.DAS.WireMockServiceApi\SFA.DAS.WireMockServiceApi.csproj" />
     <ProjectReference Include="..\SFA.DAS.WireMockServiceWeb\SFA.DAS.WireMockServiceWeb.csproj" />
+    <ProjectReference Include="..\SFA.DAS.WireMockService.Data\SFA.DAS.WireMockService.Data.csproj" />
   </ItemGroup>
 
 </Project>

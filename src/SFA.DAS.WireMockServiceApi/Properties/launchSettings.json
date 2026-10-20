@@ -4,9 +4,8 @@
     "SFA.DAS.WireMockServiceApi": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
-      "launchBrowser": true,
-      "launchUrl": "__admin/settings",
-      "applicationUrl": "http://localhost:56514/",
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:8089/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

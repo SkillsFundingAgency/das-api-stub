@@ -1,3 +1,4 @@
+using SFA.DAS.WireMockService.Data;
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Logging;
@@ -12,13 +13,11 @@ namespace SFA.DAS.WireMockServiceWeb.Controllers
     public class SaveController : ControllerBase
     {
         private readonly ILogger<SaveController> _logger;
-        private readonly IWireMockHttpService _service;
         private readonly IDataRepository _repository;
 
-        public SaveController(ILogger<SaveController> logger, IWireMockHttpService service, IDataRepository repository)
+        public SaveController(ILogger<SaveController> logger, IDataRepository repository)
         {
             _logger = logger;
-            _service = service;
             _repository = repository;
         }
 
@@ -29,8 +28,7 @@ namespace SFA.DAS.WireMockServiceWeb.Controllers
             _logger.LogInformation("[api-stub/save] called with parameters {httpMethod}, {url}, {jsonData}, {httpStatusCode}", httpMethod, url, jsonData, httpStatusCode);
             if (url == null) throw new ArgumentException(nameof(url));
 
-            var mapping = await _repository.InsertOrReplace(httpMethod, url, jsonData, httpStatusCode);
-            await _service.AddOrUpdateMapping(mapping);
+            await _repository.InsertOrReplace(httpMethod.ToString(), url, jsonData, httpStatusCode);
 
             return Ok();
         }

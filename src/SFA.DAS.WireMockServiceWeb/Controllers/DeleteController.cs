@@ -1,3 +1,4 @@
+using SFA.DAS.WireMockService.Data;
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Logging;
@@ -11,13 +12,11 @@ namespace SFA.DAS.WireMockServiceWeb.Controllers
     public class DeleteController : ControllerBase
     {
         private readonly ILogger<SaveController> _logger;
-        private readonly IWireMockHttpService _service;
         private readonly IDataRepository _repository;
 
-        public DeleteController(ILogger<SaveController> logger, IWireMockHttpService service, IDataRepository repository)
+        public DeleteController(ILogger<SaveController> logger, IDataRepository repository)
         {
             _logger = logger;
-            _service = service;
             _repository = repository;
         }
 
@@ -28,8 +27,8 @@ namespace SFA.DAS.WireMockServiceWeb.Controllers
             _logger.LogInformation("[api-stub/save] called with parameters {httpMethod}, {url}", httpMethod, url);
             if (url == null) throw new ArgumentException(nameof(url));
 
-            var mapping = await _repository.Delete(httpMethod, url);
-            await _service.RemoveMapping(mapping);
+            var mapping = await _repository.Delete(httpMethod.ToString(), url);
+            if (mapping == null) return NotFound();
 
             return Ok();
         }

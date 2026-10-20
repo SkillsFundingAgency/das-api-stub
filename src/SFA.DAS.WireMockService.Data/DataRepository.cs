@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -7,18 +7,17 @@ using System.Net;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
-namespace SFA.DAS.WireMockServiceWeb
+namespace SFA.DAS.WireMockService.Data
 {
     public interface IDataRepository
     {
-        string GetData(HttpMethod method, string url);
-        Task<DataRepository.MappingData> InsertOrReplace(HttpMethod method, string url, object jsonData, HttpStatusCode httpStatusCode = HttpStatusCode.OK);
+        Task<DataRepository.MappingData> Get(string httpMethod, string url);
+        Task<DataRepository.MappingData> InsertOrReplace(string httpMethod, string url, object jsonData, HttpStatusCode httpStatusCode = HttpStatusCode.OK);
         Task DropTableStorage();
         Task CreateTableStorage();
         IEnumerable<DataRepository.MappingData> GetAll();
-        Task<DataRepository.MappingData> Delete(HttpMethod method, string url);
+        Task<DataRepository.MappingData> Delete(string httpMethod, string url);
         IEnumerable<DataRepository.MappingData> Find(string url);
     }
 
@@ -68,21 +67,19 @@ namespace SFA.DAS.WireMockServiceWeb
             public int HttpStatusCode { get; set; }
         }
 
-        public string GetData(HttpMethod method, string url)
+        public async Task<MappingData> Get(string httpMethod, string url)
         {
-            var item = _table.ExecuteQuery(new TableQuery<MappingData>()).SingleOrDefault(x =>
-                x.Url == Uri.UnescapeDataString(url) && x.HttpMethod.Equals(method.ToString(), StringComparison.InvariantCultureIgnoreCase));
-            return item?.Data;
+            return await Retrieve(httpMethod, url);
         }
 
-        public async Task<MappingData> InsertOrReplace(HttpMethod method, string url, object jsonData, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
+        public async Task<MappingData> InsertOrReplace(string httpMethod, string url, object jsonData, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
         {
             var record = new MappingData
             {
                 PartitionKey = _options.EnvironmentName,
-                RowKey = $"{method}_{Uri.EscapeDataString(url)}",
+                RowKey = MappingKey.For(httpMethod, url),
                 Url = Uri.UnescapeDataString(url),
-                HttpMethod = method.ToString(),
+                HttpMethod = httpMethod,
                 Data = JsonSerializer.Serialize(jsonData),
                 HttpStatusCode = (int)httpStatusCode
             };
@@ -98,14 +95,21 @@ namespace SFA.DAS.WireMockServiceWeb
             await _table.DeleteIfExistsAsync();
         }
 
-        public async Task<MappingData> Delete(HttpMethod method, string url)
+        public async Task<MappingData> Delete(string httpMethod, string url)
         {
-            var record = _table.ExecuteQuery(new TableQuery<MappingData>()).Single(x =>
-                string.Equals(x.Url, url, StringComparison.InvariantCultureIgnoreCase)
-            && string.Equals(x.HttpMethod, method.ToString(), StringComparison.InvariantCultureIgnoreCase));
+            var record = await Retrieve(httpMethod, url);
+            if (record == null) return null;
+
             var operation = TableOperation.Delete(record);
             await _table.ExecuteAsync(operation);
             return record;
+        }
+
+        // A point read on partition and row key, so the cost does not grow with the number of mappings in the table
+        private async Task<MappingData> Retrieve(string httpMethod, string url)
+        {
+            var operation = TableOperation.Retrieve<MappingData>(_options.EnvironmentName, MappingKey.For(httpMethod, url));
+            return (await _table.ExecuteAsync(operation)).Result as MappingData;
         }
 
         public IEnumerable<MappingData> Find(string url)
