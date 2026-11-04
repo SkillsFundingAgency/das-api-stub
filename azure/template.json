@@ -299,7 +299,7 @@
                         "value": {
                             "array": [
                                 {
-                                    "name": "APPINSIGHTS_CONNECTIONSTRING",
+                                    "name": "APPINSIGHTS_CONNECTION_STRING",
                                     "value": "[reference('api-app-insights').outputs.ConnectionString.value]"
                                 },
                                 {
@@ -441,8 +441,8 @@
                         "value": {
                             "array": [
                                 {
-                                    "name": "APPINSIGHTS_CONNECTIONSTRING",
-                                    "value": "[reference('api-app-insights').outputs.ConnectionString.value]"
+                                    "name": "APPINSIGHTS_CONNECTION_STRING",
+                                    "value": "[reference('ui-app-insights').outputs.ConnectionString.value]"
                                 },
                                 {
                                     "name": "ApiStubSettings:StorageAccountConnectionString",
