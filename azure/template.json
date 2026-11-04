@@ -104,6 +104,13 @@
             "type": "string",
             "defaultValue": "[utcNow()]"
         },
+        "logAnalyticsSubscriptionId": {
+            "type": "string",
+            "defaultValue": "[subscription().subscriptionId]"
+        },
+        "logAnalyticsWorkspaceName": {
+            "type": "string"
+        },
         "vnetRouteAllEnabled": {
             "type": "bool",
             "defaultValue": false
@@ -205,6 +212,9 @@
                     },
                     "attachedService": {
                         "value": "[variables('apiAppServiceName')]"
+                    },
+                    "logAnalyticsWorkspaceId": {
+                        "value": "[resourceId(parameters('logAnalyticsSubscriptionId'),parameters('sharedManagementResourceGroup'),'Microsoft.OperationalInsights/workspaces',parameters('logAnalyticsWorkspaceName'))]"
                     }
                 }
             }
@@ -289,8 +299,8 @@
                         "value": {
                             "array": [
                                 {
-                                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                    "value": "[reference('api-app-insights').outputs.InstrumentationKey.value]"
+                                    "name": "APPINSIGHTS_CONNECTIONSTRING",
+                                    "value": "[reference('api-app-insights').outputs.ConnectionString.value]"
                                 },
                                 {
                                     "name": "EnvironmentName",
@@ -344,6 +354,9 @@
                     },
                     "attachedService": {
                         "value": "[variables('uiAppServiceName')]"
+                    },
+                    "logAnalyticsWorkspaceId": {
+                        "value": "[resourceId(parameters('logAnalyticsSubscriptionId'),parameters('sharedManagementResourceGroup'),'Microsoft.OperationalInsights/workspaces',parameters('logAnalyticsWorkspaceName'))]"
                     }
                 }
             }
@@ -428,8 +441,8 @@
                         "value": {
                             "array": [
                                 {
-                                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                    "value": "[reference('ui-app-insights').outputs.InstrumentationKey.value]"
+                                    "name": "APPINSIGHTS_CONNECTIONSTRING",
+                                    "value": "[reference('api-app-insights').outputs.ConnectionString.value]"
                                 },
                                 {
                                     "name": "ApiStubSettings:StorageAccountConnectionString",
