@@ -299,7 +299,7 @@
                         "value": {
                             "array": [
                                 {
-                                    "name": "APPINSIGHTS_CONNECTION_STRING",
+                                    "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
                                     "value": "[reference('api-app-insights').outputs.ConnectionString.value]"
                                 },
                                 {
@@ -441,7 +441,7 @@
                         "value": {
                             "array": [
                                 {
-                                    "name": "APPINSIGHTS_CONNECTION_STRING",
+                                    "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
                                     "value": "[reference('ui-app-insights').outputs.ConnectionString.value]"
                                 },
                                 {
