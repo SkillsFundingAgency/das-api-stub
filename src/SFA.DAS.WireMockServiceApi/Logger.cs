@@ -13,9 +13,11 @@ namespace SFA.DAS.WireMockServiceApi
     {
         private readonly ILogger _logger;
         private readonly TelemetryClient _telemetryClient;
+        private readonly bool _logRequestBodies;
 
-        public Logger(ILogger logger, TelemetryClient telemetryClient)
+        public Logger(ILogger logger, TelemetryClient telemetryClient, bool logRequestBodies = false)
         {
+            _logRequestBodies = logRequestBodies;
             _logger = logger;
             _telemetryClient = telemetryClient;
         }
@@ -55,6 +57,14 @@ namespace SFA.DAS.WireMockServiceApi
             if (logEntryModel == null || logEntryModel.Request == null || logEntryModel.Response == null)
             {
                 return;
+            }
+
+            if (_logRequestBodies && !isAdminRequest)
+            {
+                var request = logEntryModel.Request;
+                var body = request.Body ?? (request.BodyAsJson == null ? null : JsonConvert.SerializeObject(request.BodyAsJson));
+                _logger.LogInformation("{Method} {Path} -> {StatusCode} (mapping: {Mapping}) request body: {Body}",
+                    request.Method, request.Path, logEntryModel.Response.StatusCode, logEntryModel.MappingTitle ?? logEntryModel.MappingGuid.ToString(), body);
             }
 
             using (_telemetryClient.StartOperation<RequestTelemetry>(logEntryModel.Request.Path))

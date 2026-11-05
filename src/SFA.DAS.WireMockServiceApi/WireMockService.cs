@@ -1,4 +1,5 @@
 ﻿using Microsoft.ApplicationInsights;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -12,12 +13,12 @@ namespace SFA.DAS.WireMockServiceApi
         private readonly ILogger _logger;
         private readonly WireMockServerSettings _settings;
 
-        public WireMockService(ILogger<WireMockService> logger, IOptions<WireMockServerSettings> settings, TelemetryClient telemetryClient)
+        public WireMockService(ILogger<WireMockService> logger, IOptions<WireMockServerSettings> settings, TelemetryClient telemetryClient, IConfiguration configuration)
         {
             _logger = logger;
             _settings = settings.Value;
 
-            _settings.Logger = new Logger(logger, telemetryClient);
+            _settings.Logger = new Logger(logger, telemetryClient, configuration.GetValue<bool>("LogRequestBodies"));
         }
         
         public void Start()
