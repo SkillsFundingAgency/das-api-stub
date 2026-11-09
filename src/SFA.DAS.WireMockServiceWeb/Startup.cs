@@ -45,7 +45,7 @@ namespace SFA.DAS.WireMockServiceWeb
 
             services.AddSingleton<IDataRepository, DataRepository>();
 
-            services.AddApplicationInsightsTelemetry(config["APPINSIGHTS_INSTRUMENTATIONKEY"]);
+            services.AddApplicationInsightsTelemetry();
             services.AddLogging(logging => logging.AddConsole().AddDebug());
 
             services.AddHealthChecks();
