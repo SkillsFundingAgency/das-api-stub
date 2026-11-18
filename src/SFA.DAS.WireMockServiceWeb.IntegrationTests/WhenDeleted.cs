@@ -1,10 +1,10 @@
+using SFA.DAS.WireMockService.Data;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using SFA.DAS.Testing.AzureStorageEmulator;
-using SFA.DAS.WireMockServiceApi;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -17,63 +17,43 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
 {
     public class WhenDeleted
     {
-        private const int Port = 8888;
+        private readonly string _tableName = $"Test{Guid.NewGuid():N}";
         private TestServer _testServer;
-        private HttpClient _wireMockApiClient;
+        private TestServer _stubAppServer;
         private HttpClient _webApiClient;
-        private TestServer _wireMockServer;
+        private HttpClient _stubAppClient;
         private IDataRepository _dataRepository;
 
         [OneTimeSetUp]
-        public void Setup()
+        public async Task Setup()
         {
             AzureStorageEmulatorManager.StartStorageEmulator();
-            BuildWireMockClient();
-            BuildWireMockHost();
-        }
-        private void BuildWireMockClient()
-        {
+
             var settings = new Dictionary<string, string>
             {
-                {"ApiStubSettings:WireMockServiceApiBaseUrl", $"http://localhost:{Port}"}
+                { "ApiStubSettings:StorageTableName", _tableName }
             };
 
-            var builder = new WebHostBuilder()
-                .ConfigureAppConfiguration((context, config) =>
-                {
-                    config.AddEnvironmentVariables();
-                    config.AddInMemoryCollection(settings);
-                })
-                .UseStartup<Startup>();
-
-            _testServer = new TestServer(builder);
+            _testServer = new TestServer(new WebHostBuilder()
+                .ConfigureAppConfiguration((context, config) => config.AddInMemoryCollection(settings))
+                .UseStartup<Startup>());
             _webApiClient = _testServer.CreateClient();
             _dataRepository = (IDataRepository)_testServer.Services.GetService(typeof(IDataRepository));
-        }
+            await _dataRepository.CreateTableStorage();
 
-        private void BuildWireMockHost()
-        {
-            IDictionary<string, string> settings = new Dictionary<string, string>();
-            settings.Add("WireMockServerSettings:Port", $"{Port}");
-            settings.Add("WireMockServerSettings:StartAdminInterface", "true");
-
-            var wireMockHostBuilder = new WebHostBuilder()
-                .ConfigureAppConfiguration((context, config) =>
-                {
-                    config.AddInMemoryCollection(settings);
-                })
-                .UseStartup<WireMockServerStartup>();
-            _wireMockServer = new TestServer(wireMockHostBuilder);
-            _wireMockApiClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{Port}") };
+            _stubAppServer = new TestServer(new WebHostBuilder()
+                .ConfigureAppConfiguration((context, config) => config.AddInMemoryCollection(settings))
+                .UseStartup<WireMockServiceApi.Startup>());
+            _stubAppClient = _stubAppServer.CreateClient();
         }
 
         [OneTimeTearDown]
         public async Task TearDown()
         {
-            _wireMockApiClient?.Dispose();
             _webApiClient?.Dispose();
+            _stubAppClient?.Dispose();
             _testServer?.Dispose();
-            _wireMockServer?.Dispose();
+            _stubAppServer?.Dispose();
             await _dataRepository.DropTableStorage();
         }
 
@@ -84,48 +64,37 @@ namespace SFA.DAS.WireMockServiceWeb.IntegrationTests
 
             var key = Uri.EscapeDataString("/data?v=1.0&id=12345");
 
-            await _dataRepository.InsertOrReplace(httpMethod, key, "test");
+            await _dataRepository.InsertOrReplace(httpMethod.ToString(), key, "test");
 
             var response = await _webApiClient.DeleteAsync($"api-stub/delete?httpMethod={httpMethod}&url={key}");
             response.EnsureSuccessStatusCode();
 
-            var data = _dataRepository.GetData(httpMethod, key);
+            var data = (await _dataRepository.Get(httpMethod.ToString(), key))?.Data;
             data.Should().BeNullOrEmpty();
         }
 
         [Test]
-        public async Task deleted_mapping_is_no_longer_served_by_wiremock()
+        public async Task deleted_mapping_is_no_longer_served_by_the_stub_app()
         {
             const HttpMethod httpMethod = HttpMethod.Get;
             var key = $"/{Guid.NewGuid()}";
 
             var save = await _webApiClient.PostAsync($"api-stub/save?httpMethod={httpMethod}&url={key}", new StringContent("{}", Encoding.UTF8, "application/json"));
             save.EnsureSuccessStatusCode();
-            (await _wireMockApiClient.GetAsync(key)).StatusCode.Should().Be(HttpStatusCode.OK);
+            (await _stubAppClient.GetAsync(key)).StatusCode.Should().Be(HttpStatusCode.OK);
 
             var response = await _webApiClient.DeleteAsync($"api-stub/delete?httpMethod={httpMethod}&url={key}");
             response.EnsureSuccessStatusCode();
 
-            (await _wireMockApiClient.GetAsync(key)).StatusCode.Should().Be(HttpStatusCode.NotFound);
+            (await _stubAppClient.GetAsync(key)).StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [Test]
-        public async Task deleting_a_mapping_leaves_other_wiremock_mappings_in_place()
+        public async Task deleting_a_mapping_that_does_not_exist_is_not_found()
         {
-            const HttpMethod httpMethod = HttpMethod.Get;
-            var untouchedPath = $"/{Guid.NewGuid()}";
-            var key = $"/{Guid.NewGuid()}";
+            var response = await _webApiClient.DeleteAsync($"api-stub/delete?httpMethod={HttpMethod.Get}&url=/{Guid.NewGuid()}");
 
-            var save = await _webApiClient.PostAsync($"api-stub/save?httpMethod={httpMethod}&url={key}", new StringContent("{}", Encoding.UTF8, "application/json"));
-            save.EnsureSuccessStatusCode();
-
-            var mapping = new StringContent($"{{\"Request\":{{\"Path\":\"{untouchedPath}\",\"Methods\":[\"GET\"]}},\"Response\":{{\"StatusCode\":200}}}}", Encoding.UTF8, "application/json");
-            (await _wireMockApiClient.PostAsync("/__admin/mappings", mapping)).EnsureSuccessStatusCode();
-
-            var response = await _webApiClient.DeleteAsync($"api-stub/delete?httpMethod={httpMethod}&url={key}");
-            response.EnsureSuccessStatusCode();
-
-            (await _wireMockApiClient.GetAsync(untouchedPath)).StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
     }
 }

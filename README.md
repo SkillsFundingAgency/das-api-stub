@@ -9,9 +9,23 @@ Licensed under the [MIT license](https://github.com/SkillsFundingAgency/das-empl
 
 ## About
 
-DAS API Stub is a<a href="https://github.com/WireMock-Net/WireMock.Net" target="_blank"> WireMock.Net</a> based API server for enabling substitution of RESTful dependee API endpoints. The Stub mappings are saved in Azure Storage and are automatically synchronised with in-memory WireMock service. Deployed solution consists of two layers:
-* SFA.DAS.WireMockServiceApi - WireMock Web App
-* SFA.DAS.WireMockServiceWeb - .NET Core Web API with Swagger UI front end for managing API Stub mappings
+DAS API Stub substitutes RESTful APIs that a service depends on, returning canned responses that tests and testers register. Mappings are saved in Azure Table Storage, and every stubbed request is answered by reading its mapping from the table, so no mappings are held in memory and any number of instances serve the same mappings as soon as they are saved. The solution consists of:
+* SFA.DAS.WireMockServiceApi - the stub app that consumers call in place of the real API
+* SFA.DAS.WireMockServiceWeb - .NET Core Web API with Swagger UI front end for managing stub mappings
+* SFA.DAS.WireMockService.Data - the table storage repository and mapping key shared by both
+
+The projects keep their WireMock names, but WireMock.Net is no longer used.
+
+### How requests are matched
+A request is answered by the mapping saved for the same HTTP method and URL. When comparing URLs:
+* method and URL case are ignored
+* a leading `/` and a trailing `?` are ignored
+* percent-encoding is ignored, so a fully escaped URL matches its plain form
+* query parameter order is ignored, but the set of parameters must match exactly: a request with extra parameters does not match
+
+Requests without a matching mapping get `404` with `{"Status":"No matching mapping found"}`.
+
+Because the whole URL is passed to `/api-stub/save` as a query parameter, escape it (for example with `Uri.EscapeDataString`) when it has a query string of its own. Otherwise everything after its first `&` is read as a separate parameter of the save request and lost.
 
 ### Supported HTTP Methods
 * Get
@@ -97,41 +111,33 @@ DAS API Stub is a<a href="https://github.com/WireMock-Net/WireMock.Net" target="
 * JSON
 
 ## Local running
-Start `AzureStorageEmulator.exe` or `Azurite` (as Administrator) and run solution with 2 startup projects: `SFA.DAS.WireMockServiceApi` & `SFA.DAS.WireMockServiceWeb`
+Start `Azurite` (or `AzureStorageEmulator.exe`) and run the solution with 2 startup projects: `SFA.DAS.WireMockServiceApi` & `SFA.DAS.WireMockServiceWeb`. The stub app listens on `http://localhost:8089`.
 
 ### Required configuration
-#### SFA.DAS.WireMockServiceWeb
+Both apps read the same settings, and must use the same `EnvironmentName`, which is the table partition mappings are saved in and served from.
 ```json
 "ApiStubSettings": {
-   "WireMockServiceApiBaseUrl": "http://localhost:8089",
    "EnvironmentName": "DEV",
    "StorageAccountConnectionString": "UseDevelopmentStorage=true"
 }
 ```
-#### SFA.DAS.WireMockServiceApi
-```json
-"WireMockServerSettings": {
-  "Port": 8089,
-  "StartAdminInterface": true
-}
-```
+`SFA.DAS.WireMockServiceApi` also accepts `"LogRequestBodies": true` to log the body of every stubbed request.
+
 ### Running tests
-All tests are intergration tests and require a local instance of Azure Storage Emulator or Azurite (run as Administrator). Tests can be run using dotnet-cli from the `das-api-stub\src` directory using command: `dotnet test -v=normal`
+All tests are integration tests and require a local instance of Azurite or Azure Storage Emulator. Tests can be run using dotnet-cli from the `das-api-stub\src` directory using command: `dotnet test -v=normal`
 
 ### WebAPI operations
 The following operations are available in the front-end layer for managing API stub mappings:
 #### GET - /api-stub/database
 Retrieves all mappings from Azure table storage
-#### GET - /api-stub/wiremock
-Retrieves all mappings from in-memory WireMock service
 #### GET - /api-stub/find
 Searches all mappings by partial or full URL
 #### GET - /api-stub/refresh
-Synchonises mappings stored in Azure table storage with WireMock service. Should be used when mappings are added directly into the table storage for synchornisation. Also used in release pipe-line in a post-deployment step.
+Does nothing and returns `200`. Kept because the release pipeline's post-deploy step calls it; mappings are read from table storage on every request, so there is nothing to synchronise.
 #### POST - /api-stub/save
-Adds new or updates existing API stub mapping using URL input parameter as a key. If update is successful, automatically synchronises WireMock service with Azure storage mappings.
+Adds a new mapping or replaces the existing one for the same method and URL. It is served immediately by every instance of the stub app.
 #### DELETE - /api-stub/delete
-Deletes existing API stub mapping using URL input parameter as a key. If deletion is successful, automatically synchronises WireMock service with Azure storage mappings.
+Deletes the mapping for the method and URL. Returns `404` if there is no such mapping.
 
 ### Sample usage (C#)
 ##### Adding a HTTP GET mapping with 200 (OK) response code and JSON response body

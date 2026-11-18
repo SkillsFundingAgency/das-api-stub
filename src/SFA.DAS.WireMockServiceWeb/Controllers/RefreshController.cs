@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace SFA.DAS.WireMockServiceWeb.Controllers
 {
@@ -9,20 +8,19 @@ namespace SFA.DAS.WireMockServiceWeb.Controllers
     public class RefreshController : ControllerBase
     {
         private readonly ILogger<RefreshController> _logger;
-        private readonly IWireMockHttpService _service;
 
-        public RefreshController(ILogger<RefreshController> logger, IWireMockHttpService service)
+        public RefreshController(ILogger<RefreshController> logger)
         {
             _logger = logger;
-            _service = service;
         }
 
+        // Kept only because the release pipeline's post-deploy step calls it. The stub app reads every request
+        // straight from table storage, so there is no longer anything to synchronise.
         [HttpGet]
         [Route("refresh")]
-        public async Task<IActionResult> Refresh()
+        public IActionResult Refresh()
         {
-            _logger.LogInformation("[api-stub/refresh] called");
-            await _service.Refresh();
+            _logger.LogInformation("[api-stub/refresh] called; nothing to refresh");
             return Ok();
         }
     }
